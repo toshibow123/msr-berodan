@@ -1,0 +1,9 @@
+# Python依存パッケージ
+
+# Gemini API（記事生成用）
+google-generativeai>=0.3.0
+
+# オプション: より高度な機能が必要な場合
+# requests>=2.31.0  # urllib.requestの代わりに使用可能
+# python-dotenv>=1.0.0  # .envファイルの自動読み込み
+
