@@ -284,7 +284,13 @@ export default async function PostPage({
         </article>
 
         {/* 広告ウィジェット - 位置4 */}
-        <DmmAdWidgetSimple adId="f8bfa16b6ea380c9d074a49090eed3b0" />
+        <div 
+          className="my-8 flex justify-center w-full" 
+          style={{ minHeight: '250px' }}
+          dangerouslySetInnerHTML={{
+            __html: `<ins class="dmm-widget-placement" data-id="f8bfa16b6ea380c9d074a49090eed3b0" style="background:transparent"></ins><script src="https://widget-view.dmm.co.jp/js/placement.js" class="dmm-widget-scripts" data-id="f8bfa16b6ea380c9d074a49090eed3b0"></script>`
+          }}
+        />
 
         {/* サプリLPセクション */}
         <VitalityPromoSection />
