@@ -60,35 +60,93 @@ export default function ArticleContentWithAds({ htmlContent }: ArticleContentWit
           insElement.className = 'dmm-widget-placement'
           insElement.setAttribute('data-id', '43a8eba658580aad40df9b33383be12f')
           insElement.style.background = 'transparent'
+          insElement.style.display = 'block'
+          insElement.style.width = '100%'
+          insElement.style.minHeight = '250px'
           adContainer.appendChild(insElement)
 
           // スクリプトはグローバルに1回だけ読み込む
           const scriptUrl = 'https://widget-view.dmm.co.jp/js/placement.js'
           let globalScript = document.querySelector(`script[src="${scriptUrl}"]`) as HTMLScriptElement
           
-          if (!globalScript) {
-            globalScript = document.createElement('script')
-            globalScript.src = scriptUrl
-            globalScript.async = true
-            document.body.appendChild(globalScript)
-          }
-
           // この広告用のスクリプトタグ（data-id付き）を追加
           const adScriptElement = document.createElement('script')
           adScriptElement.className = 'dmm-widget-scripts'
           adScriptElement.setAttribute('data-id', '43a8eba658580aad40df9b33383be12f')
           adContainer.appendChild(adScriptElement)
 
-          // 広告の初期化を試みる
-          globalScript.onload = () => {
-            setTimeout(() => {
-              if (window.DMM && window.DMM.widget) {
-                window.DMM.widget.init()
+          const initAds = () => {
+            const retryInit = (attempt: number = 0) => {
+              if (attempt > 3) {
+                console.warn('広告初期化リトライ上限に達しました: 位置3')
+                return
               }
-            }, 1000)
+
+              setTimeout(() => {
+                if (window.DMM && window.DMM.widget) {
+                  try {
+                    window.DMM.widget.init()
+                    console.log('DMM広告初期化完了: 位置3', '試行回数:', attempt + 1)
+                    
+                    // 広告が表示されたか確認
+                    setTimeout(() => {
+                      const adContent = adContainer.querySelector('iframe, img, a, div[id*="dmm"], div[class*="dmm"], div[class*="widget"], div[class*="item"]')
+                      if (!adContent && attempt < 3) {
+                        console.log('広告が表示されていないため再初期化: 位置3')
+                        retryInit(attempt + 1)
+                      } else if (adContent) {
+                        console.log('広告コンテンツ検出: 位置3')
+                      }
+                    }, 2000)
+                  } catch (e) {
+                    console.error('広告初期化エラー: 位置3', e)
+                    if (attempt < 3) {
+                      retryInit(attempt + 1)
+                    }
+                  }
+                } else if (attempt < 3) {
+                  console.log('DMMオブジェクトが未準備、再試行: 位置3')
+                  retryInit(attempt + 1)
+                }
+              }, 1000 + (attempt * 1000))
+            }
+            
+            retryInit()
+          }
+          
+          if (!globalScript) {
+            globalScript = document.createElement('script')
+            globalScript.src = scriptUrl
+            globalScript.async = true
+            globalScript.onload = () => {
+              console.log('DMM広告スクリプト読み込み完了（グローバル）')
+              globalScript.setAttribute('data-loaded', 'true')
+              setTimeout(() => {
+                initAds()
+              }, 500)
+            }
+            globalScript.onerror = () => {
+              console.error('DMM広告スクリプト読み込みエラー')
+            }
+            document.body.appendChild(globalScript)
+          } else if (globalScript.getAttribute('data-loaded') === 'true') {
+            // 既に読み込まれている場合は即座に初期化
+            setTimeout(() => {
+              initAds()
+            }, 500)
+          } else {
+            // 読み込み中の場合はonloadを待つ
+            const loadHandler = () => {
+              globalScript.setAttribute('data-loaded', 'true')
+              setTimeout(() => {
+                initAds()
+              }, 500)
+              globalScript.removeEventListener('load', loadHandler)
+            }
+            globalScript.addEventListener('load', loadHandler)
           }
         }
-      }, 500)
+      }, 300)
 
       return () => clearTimeout(timer)
     }
