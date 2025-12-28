@@ -4,13 +4,13 @@ import { useRouter, useSearchParams } from 'next/navigation'
 
 interface YearSelectProps {
   years: number[]
-  selectedYear?: string
-  selectedTag?: string
 }
 
-export default function YearSelect({ years, selectedYear, selectedTag }: YearSelectProps) {
+export default function YearSelect({ years }: YearSelectProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const selectedYear = searchParams.get('year') || ''
+  const selectedTag = searchParams.get('tag')
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const year = e.target.value
@@ -29,7 +29,7 @@ export default function YearSelect({ years, selectedYear, selectedTag }: YearSel
 
   return (
     <select
-      value={selectedYear || ''}
+      value={selectedYear}
       onChange={handleChange}
       className="w-full md:w-auto px-4 py-2 bg-neutral-900 border border-neutral-800 rounded-lg text-neutral-200 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 cursor-pointer"
     >

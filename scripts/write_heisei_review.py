@@ -115,6 +115,7 @@ def fetch_dmm_product_info(api_id: str, affiliate_id: str, content_id: str) -> d
                     "genre": [genre.get("name", "") for genre in item.get("iteminfo", {}).get("genre", [])],
                     "maker": item.get("iteminfo", {}).get("maker", [{}])[0].get("name", "") if item.get("iteminfo", {}).get("maker") else "",
                     "director": item.get("iteminfo", {}).get("director", [{}])[0].get("name", "") if item.get("iteminfo", {}).get("director") else "",
+                    "description": item.get("review", {}).get("text", "") if item.get("review") else "",
                 }
             else:
                 return None
@@ -187,7 +188,7 @@ def get_negative_constraints() -> list:
     ]
 
 
-def create_prompt(product_info: dict) -> str:
+def create_prompt(product_info: dict, description: str = "") -> str:
     """
     平成AV名作レビュー記事のプロンプトを作成
     """
@@ -221,49 +222,59 @@ def create_prompt(product_info: dict) -> str:
     # 禁止ワードのリストを文字列に変換
     negative_constraints_text = "\n".join([f"- {constraint}" for constraint in negative_constraints])
     
-    prompt = f"""あなたは「ビデオ黄金時代を知る愛好家」です。
-以下の旧作・名作AVについて、熱のこもったレビュー記事を書いてください。
+    # 第一印象セクションの見出しをランダムに選択
+    first_impression_headings = [
+        "見始めた瞬間に完全にやられたわｗ",
+        "冒頭からマジで期待値ブチ上げだったわｗ",
+        "最初の数秒で完全にハマったわｗ",
+        "タイトル見た瞬間、これヤバいって確信したわｗ",
+        "画面に映った瞬間、もう完全にやられたわｗ",
+        "見始めた瞬間に「ああ、これは伝説だわ」って確信したわｗ",
+        "冒頭からマジで興奮が止まらなかったわｗ",
+        "最初のシーンで完全に引き込まれたわｗ",
+        "始まった瞬間の「キタコレｗ」感"
+    ]
+    selected_heading = random.choice(first_impression_headings)
+    
+    prompt = f"""# Role
+あなたはAVの熱狂的なファンです。
+深夜に最高の一本を見つけて、興奮のままに掲示板やSNSで語り散らかしている「一人の視聴者」として書いてください。
 
-**【今回の記事のテーマ・視点】**
-この記事は、以下の視点を最優先して書いてください：
+# スタイル指針
+- スペック（画角、解像度、制作年）などの説明は一切不要。そんなの誰も見てないｗ
+- 丁寧語、ライター気取りのきれいな言葉は全部ゴミ箱へ。
+- 「ｗ」や「マジで」「ヤバい」を多用して、リアルな興奮を表現する。
+- 語尾は「〜だわ」「〜すぎるｗ」「マジで抜ける」などの完全タメ口。
 
-【{selected_angle['name']}】
-{selected_angle['description']}
+# 執筆ルール
+1. **シーンの描写**: 
+   作品に含まれるシーンを具体的に描写してください。変な比喩はいりません。
+   あらすじから読み取れるシーンを中心に書いてください。
+2. **シーンに食いつく**: 
+   「ここがエロかったｗ」というポイントだけを熱量100%で書く。
+3. **主観のみで語る**: 
+   「俺はこのシーンで昇天したｗ」的な、個人的な感想を最優先。
 
-この視点を軸に、作品の魅力を語ってください。他の視点も補助的に使っても構いませんが、上記の視点を主軸として記事を構成してください。
+# 作品情報
+**あらすじ・商品説明:**
+{description if description else "（情報なし）"}
 
-**【禁止事項】**
-以下の表現や考え方は、陳腐になるため絶対に使用しないでください：
-{negative_constraints_text}
+上記のあらすじをもとに、作品の内容を推測して記事を書いてください。
 
-特に注意：
-- 「現代では絶対に作れない」という表現は使わず、もっと具体的で独自の表現を考えてください。
-- 「コンプライアンス」という言葉は一切使わず、別の表現で置き換えてください。
-- 見出しは「概要」「まとめ」「あらすじ」のような平凡なものではなく、読者の興味を引く、フックのある見出しにしてください。
-
-**【執筆ルール：名作の語り部】**
-
-**1. 基本スタンス**
-- 口調は「〜だ」「〜である」という落ち着いた常体、あるいは「〜なんですよ」という熱っぽい語り口。
-- 上記の「今回の記事のテーマ・視点」を最優先に、その視点から作品を語ってください。
-
-**2. 描写のポイント**
-- **「画質の古さ」をポジティブに変換する。**
-  - 画質が粗い・4:3比率であっても、「それが逆に生々しい」「ドキュメント感がある」と表現する。
-  - 例：「SD画質の荒い粒子が、逆に生々しさを際立たせている。」
-- **「女優の覚悟」を称賛する。**
-  - 当時の女優の体当たりな演技や、表情の作り込みを「プロ根性」としてリスペクトする。
-  - 例：「この表情の作り込み、今の女優では絶対に出せない。」
-
-**3. 記事の構成**
+# 記事の構成
 以下の構成で、Markdown本文のみを出力してください（Frontmatterは不要）：
 
-## [独自のフックのある見出し]
-（再発見の感動から入る。ただし「久しぶりに見返して、震えた」という表現は使わず、もっと独自の表現を考えてください）
-{f'（{year}年の作品だが、全く色褪せていない）' if year else ''}
+## [感情が漏れ出してるような一言タイトル]
+（「キタコレｗ」「マジでヤバい」「これ見てないやつは損してる」みたいな、興奮が溢れ出てる感じのタイトル）
+
+{f'（{year}年の作品だけど、今見てもマジで抜けるｗ）' if year else ''}
 
 ## {title}
-![パッケージ画像]({image_url})
+<a href="{affiliate_url}" target="_blank" rel="sponsored noopener noreferrer">
+  <img src="{image_url}" alt="{title}" />
+</a>
+
+**重要**: 必ず上記の画像タグとアフィリエイトリンクを**そのまま**記事に含めてください。画像URLやリンクを変更しないでください。
 
 **出演:** {actresses}
 **ジャンル:** {genres}
@@ -275,15 +286,40 @@ def create_prompt(product_info: dict) -> str:
   <a href="{affiliate_url}" target="_blank" rel="noopener noreferrer">サンプル動画を見る</a>
 </div>
 
-## [上記の「今回の記事のテーマ・視点」に基づいた独自の見出し]
-（選択された視点（{selected_angle['name']}）に基づいて、作品の魅力を語ってください。見出しも独自のものにしてください）
+## {selected_heading}
+（作品を見始めた瞬間の第一印象を、興奮のままに書く）
+（「これヤバいｗ」「マジで期待してたけど超えてきた」みたいな感じ）
+（女優の見た目、雰囲気、最初のシーンの印象など、主観100%で）
+
+## ここがエロかったｗ（シーン別に熱量100%で）
+（具体的なシーンをストレートに描写してください）
+（「このシーンでマジで昇天したｗ」「ここが抜きポイントだわ」みたいな感じ）
+（選択された視点（{selected_angle['name']}）に基づいて、特に食いついたポイントを書く）
+（メーカーの傾向（{maker}ならドキュメンタリー風など）から推測して、現場の熱量を感じさせる描写を加える）
+（あらすじから読み取れる内容を中心に、自然なシーンを想像して書いてください）
+
+**重要**: シーンを説明した後、必ず以下の形式でサンプル画像を4〜5枚挿入してください：
+<a href="{affiliate_url}" target="_blank" rel="sponsored noopener noreferrer">
+  <img src="https://pics.dmm.co.jp/digital/video/{content_id}/{content_id}jp-1.jpg" alt="{title}" />
+</a>
+<a href="{affiliate_url}" target="_blank" rel="sponsored noopener noreferrer">
+  <img src="https://pics.dmm.co.jp/digital/video/{content_id}/{content_id}jp-2.jpg" alt="{title}" />
+</a>
+<a href="{affiliate_url}" target="_blank" rel="sponsored noopener noreferrer">
+  <img src="https://pics.dmm.co.jp/digital/video/{content_id}/{content_id}jp-3.jpg" alt="{title}" />
+</a>
+<a href="{affiliate_url}" target="_blank" rel="sponsored noopener noreferrer">
+  <img src="https://pics.dmm.co.jp/digital/video/{content_id}/{content_id}jp-4.jpg" alt="{title}" />
+</a>
+<a href="{affiliate_url}" target="_blank" rel="sponsored noopener noreferrer">
+  <img src="https://pics.dmm.co.jp/digital/video/{content_id}/{content_id}jp-5.jpg" alt="{title}" />
+</a>
+
+画像は各シーンの説明の後に適切に配置してください。シーンごとに1〜2枚の画像を配置するのが理想的です。
 
 <div className="affiliate-link-inline">
   <a href="{affiliate_url}" target="_blank" rel="noopener noreferrer">この名作を確認する</a>
 </div>
-
-## [画質や映像について語る独自の見出し]
-（SD画質、4:3比率、荒い粒子などを「生々しさ」「ドキュメント感」としてポジティブに評価。ただし「画質の粗さが、逆に良い」という見出しは使わず、もっと独自の表現を考えてください）
 
 ## コスパ重視の視聴アドバイス
 （以下の条件に該当する場合のみ、このセクションを追加してください）
@@ -291,23 +327,26 @@ def create_prompt(product_info: dict) -> str:
 - または、名作・シリーズ物である場合
 
 **【文章の構成】**
-1. **価格への言及:**
-   「正直、この年代の作品を定価（単品購入）で買うのは、コレクター以外にはおすすめしない。」
-   「内容はお墨付きだが、お財布へのダメージは気になるところだ。」
+1. **価格への言及（損得勘定を刺激）:**
+   「正直、この年代の作品を定価で買うのはアホだわｗ」
+   「内容はマジでお墨付きだけど、お財布が痛むｗ」
 
-2. **サブスクの提案（解決策）:**
-   「もし君がDMM TV（またはFANZA見放題）の会員なら、追加料金なしで再生ボタンを押すだけだ。」
-   「まだ会員でないなら、**無料体験枠**を使ってタダで見るのが、最も賢い"勝ち組"の選択だ。」
+2. **サブスクの提案（解決策として自然に誘導）:**
+   「DMM TV（またはFANZA見放題）の会員なら、追加料金なしで見放題だわｗ」
+   「まだ会員じゃないなら、**無料体験**でタダ見するのが最強だわｗ」
+   「匿名性も完璧だし、誰にもバレないから安心して見れるｗ」
 
 3. **強烈なひと押し:**
-   「浮いたお金で、ローションや別の新作を買うほうが建設的だろう。」
-   「ランチ1回分の値段で、この時代の名作が数万本見放題になるのだから、恐ろしい時代になったものだ。」
+   「浮いた金でローション買った方がマシだわｗ」
+   「ランチ1回分で、この時代の名作が数万本見放題ってマジでヤバい時代だわｗ」
 
-## [結論の独自の見出し]
-（「500円だろうが定価だろうが、これは映像遺産として持っておくべき」と強く推す。ただし「結論：これは映像遺産だ」という見出しは使わず、もっと独自の表現を考えてください）
+## 今すぐ見てこいｗ（ゴリ押しの結び）
+（「マジで見てないやつは損してる」「これ見ずに語れない」みたいな、熱量100%のゴリ押し）
+（「500円だろうが定価だろうが、これは持っておくべき一本だわ」と強く推す）
+（匿名性や背徳感に触れる結び。「今すぐ見ろ」という確信を読者に植え付ける）
 
 <div className="affiliate-link">
-  <a href="{affiliate_url}" target="_blank" rel="noopener noreferrer">平成の名作を今すぐチェック</a>
+  <a href="{affiliate_url}" target="_blank" rel="noopener noreferrer">今すぐチェックする</a>
 </div>
 
 **作品情報:**
@@ -321,18 +360,29 @@ def create_prompt(product_info: dict) -> str:
 **注意事項:**
 - Frontmatter（---で囲まれたメタデータ）は含めず、Markdown本文のみを出力してください。
 - アフィリエイトリンクは、上記の3箇所に必ず配置してください。
-- 熱量のある、リスペクトに満ちた文章で書いてください。
-- 上記の「今回の記事のテーマ・視点」を最優先に、その視点から作品を語ってください。
-- 禁止事項を必ず守り、陳腐な表現を避けてください。
-- 見出しはすべて独自の、読者の興味を引くものにしてください。
+- 完全タメ口で、熱量100%の文章で書いてください。
+- 「ｗ」「マジで」「ヤバい」などのカジュアルな表現を多用してください。
+- スペック（画角、解像度など）の説明は一切不要です。
+- シーンは具体的に、ストレートに描写してください。
+- 主観的な感想を最優先に書いてください。
+
+**【文字数・品質要件】**
+- **最低2,000文字以上**の記事を書いてください。読み応えのある、充実した内容にしてください。
+- 各セクションを丁寧に展開し、具体例や詳細な描写を含めてください。
+- 短すぎる文章や、表面的な内容は避けてください。
+
+**【関連性の言及】**
+- 可能であれば、同じ女優の他の作品や、同じ年代の名作との関連性を言及してください。
+- 「この女優の他の作品」「同じ時期の名作」など、読者が他の作品にも興味を持てるような記述を入れてください。
+- ただし、無理に関連性を作り出す必要はありません。自然な流れで言及できる場合のみで構いません。
 """
     
     return prompt
 
 
-def generate_article(model: genai.GenerativeModel, product_info: dict) -> str | None:
+def generate_article(model: genai.GenerativeModel, product_info: dict, description: str = "") -> str | None:
     """Gemini APIを使って記事本文を生成"""
-    prompt = create_prompt(product_info)
+    prompt = create_prompt(product_info, description)
     
     try:
         response = model.generate_content(prompt)
@@ -347,21 +397,9 @@ def generate_article(model: genai.GenerativeModel, product_info: dict) -> str | 
         return response.text
     except Exception as e:
         print(f"❌ 記事生成に失敗: {e}", file=sys.stderr)
+        import traceback
+        traceback.print_exc()
         return None
-
-
-def extract_video_cid(video_url: str) -> str | None:
-    """
-    サンプル動画URLからCIDを抽出
-    
-    Args:
-        video_url: サンプル動画のURL
-        
-    Returns:
-        抽出されたCID、またはNone
-    """
-    # 既存のextract_content_id_from_url関数を再利用
-    return extract_content_id_from_url(video_url)
 
 
 def insert_video_player(content: str, video_cid: str) -> str:
@@ -375,73 +413,51 @@ def insert_video_player(content: str, video_cid: str) -> str:
     Returns:
         動画プレーヤーが挿入された記事本文
     """
-    video_script = f'<script src="https://g.dmm.com/js/player/litevideo.js" data-cid="{video_cid}" data-width="100%" data-height="auto"></script>'
+    video_script = f'<div style="width:100%; padding-top: 75%; position:relative; margin: 2rem 0;"><iframe width="100%" height="100%" max-width="1280px" style="position: absolute; top: 0; left: 0;" src="https://www.dmm.co.jp/litevideo/-/part/=/affi_id=toshichan-002/cid={video_cid}/size=1280_720/" scrolling="no" frameborder="0" allowfullscreen></iframe></div>'
     
-    # 「FANZA TV」に関連する広告コードまたはリンクを検索
-    # パターン1: FANZA TVボタン
-    fanza_tv_patterns = [
-        r'(<a[^>]*href[^>]*premium\.dmm\.co\.jp[^>]*>.*?FANZA TV.*?</a>)',
-        r'(<div[^>]*>.*?FANZA TV.*?</div>)',
-        r'(FANZA TV)',
+    # サンプル動画ボタンの直後に挿入
+    sample_patterns = [
+        r'(<a[^>]*>.*?サンプル動画.*?</a>\s*</div>)',
+        r'(<div[^>]*className="affiliate-link-inline"[^>]*>.*?サンプル動画.*?</div>)',
     ]
     
     inserted = False
-    for pattern in fanza_tv_patterns:
+    for pattern in sample_patterns:
         match = re.search(pattern, content, re.IGNORECASE | re.DOTALL)
         if match:
             # マッチした位置の直後に挿入
             insert_pos = match.end()
             content = content[:insert_pos] + '\n\n' + video_script + '\n\n' + content[insert_pos:]
             inserted = True
-            print(f"✅ 動画プレーヤーを「FANZA TV」の直後に挿入しました")
+            print(f"✅ 動画プレーヤーを「サンプル動画」の直後に挿入しました")
             break
     
-    # パターン2: サンプル動画ボタン
+    # 挿入できなかった場合は、画像の直後に挿入
     if not inserted:
-        sample_patterns = [
-            r'(<a[^>]*>.*?サンプル動画.*?</a>)',
-            r'(<div[^>]*>.*?サンプル動画.*?</div>)',
-            r'(サンプル動画を見る)',
-        ]
-        
-        for pattern in sample_patterns:
-            match = re.search(pattern, content, re.IGNORECASE | re.DOTALL)
-            if match:
-                insert_pos = match.end()
-                content = content[:insert_pos] + '\n\n' + video_script + '\n\n' + content[insert_pos:]
-                inserted = True
-                print(f"✅ 動画プレーヤーを「サンプル動画」の直後に挿入しました")
-                break
-    
-    # パターン3: フォールバック（記事の末尾に挿入）
-    if not inserted:
-        # 最後のアフィリエイトリンクの後に挿入
-        affiliate_pattern = r'(<div[^>]*className="affiliate-link"[^>]*>.*?</div>)'
-        matches = list(re.finditer(affiliate_pattern, content, re.IGNORECASE | re.DOTALL))
-        if matches:
-            last_match = matches[-1]
-            insert_pos = last_match.end()
+        image_pattern = r'(</a>\s*\n\s*\n\s*\*\*出演:\*\*)'
+        match = re.search(image_pattern, content, re.IGNORECASE | re.DOTALL)
+        if match:
+            insert_pos = match.start()
             content = content[:insert_pos] + '\n\n' + video_script + '\n\n' + content[insert_pos:]
             inserted = True
-            print(f"✅ 動画プレーヤーを記事の末尾付近に挿入しました")
-        else:
-            # 最後の手段：記事の最後に追加
-            content = content + '\n\n' + video_script
-            inserted = True
-            print(f"✅ 動画プレーヤーを記事の最後に挿入しました")
+            print(f"✅ 動画プレーヤーを画像の直後に挿入しました")
+    
+    if not inserted:
+        print(f"⚠️  動画プレーヤーの適切な挿入位置が見つかりませんでした")
     
     return content
 
 
-def save_article(content: str, product_info: dict, publish_date: str, output_dir: str, video_cid: str | None = None) -> str | None:
+def save_article(content: str, product_info: dict, publish_date: str, output_dir: str, content_id: str) -> str | None:
     """記事をMarkdownファイルとして保存"""
-    content_id = product_info.get("content_id", "unknown")
     title = product_info.get("title", "")
     image_url = product_info.get("image_url", "")
     affiliate_url = product_info.get("affiliate_url", "")
     actress_list = product_info.get("actress", [])
     genre_list = product_info.get("genre", [])
     release_date = product_info.get("release_date", "")
+    maker = product_info.get("maker", "")
+    director = product_info.get("director", "")
     
     # 発売年を抽出
     year = ""
@@ -451,19 +467,65 @@ def save_article(content: str, product_info: dict, publish_date: str, output_dir
         except:
             pass
     
-    # タグの作成
+    # タグの作成（5〜8個程度に制限）
     tags = []
+    
+    # 必須タグ
     if year:
         tags.append(f'"{year}年"')
     tags.append('"平成の名作"')
+    
+    # 女優タグ（最大2人まで）
     if actress_list:
         tags.extend([f'"{actress}"' for actress in actress_list[:2]])
+    
+    # ジャンルタグ（最大2つまで）
     if genre_list:
         tags.extend([f'"{genre}"' for genre in genre_list[:2]])
+    
+    # メーカータグ（あれば追加）
+    if maker:
+        tags.append(f'"{maker}"')
+    
+    # 監督タグ（あれば追加）
+    if director:
+        tags.append(f'"{director}"')
+    
+    # タグ数を5〜8個に調整
+    if len(tags) < 5:
+        # タグが少ない場合は、ジャンルを追加
+        remaining = 5 - len(tags)
+        if genre_list and len(genre_list) > 2:
+            tags.extend([f'"{genre}"' for genre in genre_list[2:2+remaining]])
+    
+    # 8個を超える場合は優先順位で削減
+    if len(tags) > 8:
+        # 優先順位: 年代 > 平成の名作 > 女優 > ジャンル > メーカー > 監督
+        priority_order = []
+        if year:
+            priority_order.append(f'"{year}年"')
+        priority_order.append('"平成の名作"')
+        if actress_list:
+            priority_order.extend([f'"{actress}"' for actress in actress_list[:2]])
+        if genre_list:
+            priority_order.extend([f'"{genre}"' for genre in genre_list[:2]])
+        if maker:
+            priority_order.append(f'"{maker}"')
+        if director:
+            priority_order.append(f'"{director}"')
+        
+        tags = priority_order[:8]
+    
     tags_str = ", ".join(tags)
+    
+    # タグ数の確認（デバッグ用）
+    print(f"📌 生成されたタグ数: {len(tags)}個")
     
     # 抜粋を生成
     excerpt = f"{title}の熱いレビュー。平成時代の名作を再評価する。"
+    
+    # 評価を生成（4.0-5.0のランダム、小数点第1位まで）
+    rating = round(random.uniform(4.0, 5.0), 1)
     
     # Frontmatterを作成
     frontmatter = f"""---
@@ -474,6 +536,7 @@ image: "{image_url}"
 tags: [{tags_str}]
 affiliateLink: "{affiliate_url}"
 contentId: "{content_id}"
+rating: {rating}
 ---
 
 """
@@ -482,9 +545,8 @@ contentId: "{content_id}"
     filename = f"{publish_date}-{content_id}.md"
     filepath = os.path.join(output_dir, filename)
     
-    # 動画プレーヤーを挿入（video_cidが提供されている場合のみ）
-    if video_cid:
-        content = insert_video_player(content, video_cid)
+    # 動画プレーヤーを自動的に挿入
+    content = insert_video_player(content, content_id)
     
     # 記事全体を作成
     full_content = frontmatter + content
@@ -561,22 +623,6 @@ def main():
     print(f"✅ タイトル: {product_info.get('title', '')}")
     print(f"   出演: {', '.join(product_info.get('actress', []))}")
     
-    # 無料サンプル動画URLの入力
-    print("\n" + "-" * 80)
-    video_url = input("無料サンプル動画のURL（または動画がある作品URL）があれば貼り付けてください。なければそのままEnterキーを押してください: ").strip()
-    
-    video_cid = None
-    if video_url:
-        print("\n🔍 サンプル動画URLからCIDを抽出中...")
-        video_cid = extract_video_cid(video_url)
-        if video_cid:
-            print(f"✅ 動画CID: {video_cid}")
-            print("✅ 記事に動画プレーヤーを挿入します")
-        else:
-            print("⚠️  URLからCIDを抽出できませんでした。動画プレーヤーは挿入されません。")
-    else:
-        print("✅ 動画URLが入力されませんでした。動画プレーヤーは挿入されません。")
-    
     # 公開日の設定
     publish_date_input = input("\n公開日（YYYY-MM-DD、空白で今日）: ").strip()
     if publish_date_input:
@@ -597,11 +643,11 @@ def main():
     
     # 記事を生成
     print("\n✍️  記事生成中...")
-    article_content = generate_article(model, product_info)
+    article_content = generate_article(model, product_info, description=product_info.get("description", ""))
     
     if article_content:
-        # 記事を保存（動画CIDを渡す）
-        filepath = save_article(article_content, product_info, publish_date, str(content_dir), video_cid)
+        # 記事を保存（content_idを渡す）
+        filepath = save_article(article_content, product_info, publish_date, str(content_dir), content_id)
         
         if filepath:
             print(f"\n✅ 記事を保存しました: {filepath}")

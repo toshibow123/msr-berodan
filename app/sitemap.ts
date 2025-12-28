@@ -1,6 +1,9 @@
 import { MetadataRoute } from 'next'
 import { getAllPostSlugs } from '@/lib/posts'
 
+// 静的エクスポート用の設定
+export const dynamic = 'force-static'
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com' // 環境変数で設定
   const slugs = await getAllPostSlugs()

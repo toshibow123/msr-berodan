@@ -41,7 +41,7 @@ const TengaEggPromoSection: React.FC = () => {
       {/* SPONSORED CONTENT 区切り線 */}
       <div className="w-full border-t border-neutral-800 relative">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neutral-950 px-6 py-2 text-yellow-500 font-bold tracking-widest text-sm">
-          SPONSORED CONTENT
+          PR・SPONSORED CONTENT
         </div>
       </div>
 

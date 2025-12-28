@@ -27,6 +27,11 @@ export default function SubscriptionPromoCard({
 }: SubscriptionPromoCardProps) {
   return (
     <div className="my-12">
+      {/* PR表示 */}
+      <div className="text-center mb-2">
+        <span className="text-xs text-neutral-500 font-medium bg-neutral-900 px-3 py-1 rounded-full border border-neutral-800">PR・アフィリエイト広告</span>
+      </div>
+      
       <div className="bg-neutral-900 rounded-lg border border-neutral-800 overflow-hidden">
         {/* ヘッダー */}
         <div className="bg-neutral-800 px-6 py-3 border-b border-neutral-700">

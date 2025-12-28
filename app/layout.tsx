@@ -11,10 +11,10 @@ const notoSansJP = Noto_Sans_JP({
 
 export const metadata: Metadata = {
   title: {
-    default: '過去作・旧作大好きブログ | 埋もれた名作を再発見',
+    default: '過去作・旧作大好きブログ | 抜ける旧作・名作を発掘します',
     template: '%s | 過去作・旧作大好きブログ',
   },
-  description: 'ビデオ黄金時代を知る愛好家による、埋もれた名作・旧作AVの発掘と再評価。現代では作れない企画、女優の魂、生々しい映像美を再発見する。',
+  description: 'ビデオ黄金時代を知る愛好家による、抜ける旧作・名作AVを発掘します。現代では作れない企画、女優の魂、生々しい映像美を再発見する。',
   keywords: ['旧作AV', '名作AV', '平成AV', 'ビデオ黄金時代', 'AVレビュー', '旧作発掘'],
   authors: [{ name: '過去作・旧作大好きブログ' }],
   openGraph: {
@@ -22,13 +22,13 @@ export const metadata: Metadata = {
     locale: 'ja_JP',
     url: 'https://your-domain.com', // 実際のドメインに変更してください
     siteName: '過去作・旧作大好きブログ',
-    title: '過去作・旧作大好きブログ | 埋もれた名作を再発見',
-    description: 'ビデオ黄金時代を知る愛好家による、埋もれた名作・旧作AVの発掘と再評価。',
+    title: '過去作・旧作大好きブログ | 抜ける旧作・名作を発掘します',
+    description: 'ビデオ黄金時代を知る愛好家による、抜ける旧作・名作AVを発掘します。',
   },
   twitter: {
     card: 'summary_large_image',
-    title: '過去作・旧作大好きブログ | 埋もれた名作を再発見',
-    description: 'ビデオ黄金時代を知る愛好家による、埋もれた名作・旧作AVの発掘と再評価。',
+    title: '過去作・旧作大好きブログ | 抜ける旧作・名作を発掘します',
+    description: 'ビデオ黄金時代を知る愛好家による、抜ける旧作・名作AVを発掘します。',
   },
   robots: {
     index: true,

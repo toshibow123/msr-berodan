@@ -16,6 +16,7 @@ export interface PostData {
   subAffiliateLink?: string  // サブスク用アフィリエイトリンク
   tags?: string[]
   content?: string
+  rating?: number  // 評価（4.0-5.0）
 }
 
 export async function getAllPosts(): Promise<PostData[]> {
@@ -42,6 +43,7 @@ export async function getAllPosts(): Promise<PostData[]> {
         affiliateLink: data.affiliateLink || '',
         subAffiliateLink: data.subAffiliateLink || '',
         tags: data.tags || [],
+        rating: data.rating ? parseFloat(data.rating) : undefined,
       }
     })
 
@@ -69,7 +71,20 @@ export async function getPostBySlug(slug: string): Promise<PostData | null> {
   const processedContent = await remark()
     .use(html, { sanitize: false })
     .process(content)
-  const contentHtml = processedContent.toString()
+  let contentHtml = processedContent.toString()
+  
+  // アフィリエイトリンク（al.fanza.co.jp または al.dmm.co.jp）に target="_blank" を追加
+  contentHtml = contentHtml.replace(
+    /<a\s+href="(https?:\/\/(?:al\.(?:fanza|dmm)\.co\.jp|www\.dmm\.co\.jp)[^"]*)"([^>]*)>/gi,
+    (match, url, attrs) => {
+      // 既にtarget属性がある場合はスキップ
+      if (/target\s*=/i.test(attrs)) {
+        return match
+      }
+      // target="_blank" と rel="noopener noreferrer" を追加
+      return `<a href="${url}"${attrs} target="_blank" rel="noopener noreferrer sponsored">`
+    }
+  )
 
   return {
     slug,
@@ -81,6 +96,7 @@ export async function getPostBySlug(slug: string): Promise<PostData | null> {
     subAffiliateLink: data.subAffiliateLink || '',
     tags: data.tags || [],
     content: contentHtml,
+    rating: data.rating ? parseFloat(data.rating) : undefined,
   }
 }
 

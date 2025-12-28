@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { getPostBySlug, getAllPostSlugs } from '@/lib/posts'
+import { getPostBySlug, getAllPostSlugs, getAllPosts } from '@/lib/posts'
 import ArticleRadarChart from '@/components/RadarChart'
 import SubscriptionPromoCard from '@/components/SubscriptionPromoCard'
 import DmmAdWidgetSimple from '@/components/DmmAdWidgetSimple'
@@ -10,6 +10,7 @@ import DmmCampaignBanner from '@/components/DmmCampaignBanner'
 import ArticleContentWithAds from '@/components/ArticleContentWithAds'
 import VitalityPromoSection from '@/components/VitalityPromoSection'
 import TengaEggPromoSection from '@/components/TengaEggPromoSection'
+import RelatedPosts from '@/components/RelatedPosts'
 // PlayCircleアイコンをSVGで実装（React 19互換性のため）
 const PlayCircle = ({ className }: { className?: string }) => (
   <svg
@@ -87,7 +88,7 @@ export async function generateMetadata({
 }
 
 // 評価データを抽出（記事のメタデータから、またはデフォルト値）
-function extractRatings(post: any) {
+function extractRatings(post: any, averageRating: number) {
   // 記事のメタデータに評価が含まれている場合はそれを使用
   // なければデフォルト値を返す
   const defaultRatings = [
@@ -102,10 +103,13 @@ function extractRatings(post: any) {
   return post.ratings || defaultRatings
 }
 
-// 平均評価を計算
-function calculateAverageRating(ratings: { value: number }[]) {
-  const sum = ratings.reduce((acc, r) => acc + r.value, 0)
-  return (sum / ratings.length).toFixed(1)
+// 平均評価を計算（記事のratingを使用、なければデフォルト値）
+function calculateAverageRating(post: any): string {
+  if (post.rating && typeof post.rating === 'number') {
+    return post.rating.toFixed(1)
+  }
+  // デフォルト値（4.5）
+  return '4.5'
 }
 
 export default async function PostPage({
@@ -120,8 +124,11 @@ export default async function PostPage({
     notFound()
   }
 
-  const ratings = extractRatings(post)
-  const averageRating = calculateAverageRating(ratings)
+  // 関連記事用に全記事を取得
+  const allPosts = await getAllPosts()
+
+  const averageRating = calculateAverageRating(post)
+  const ratings = extractRatings(post, parseFloat(averageRating))
 
   // タグから年代を抽出
   const yearTag = post.tags?.find((tag: string) => tag.includes('年'))
@@ -284,6 +291,36 @@ export default async function PostPage({
 
         {/* オナホールLPセクション */}
         <TengaEggPromoSection />
+
+        {/* 関連記事 */}
+        <RelatedPosts 
+          currentSlug={slug}
+          currentTags={post.tags}
+          allPosts={allPosts}
+        />
+
+        {/* TOPページに戻るボタン */}
+        <div className="mt-16 mb-8 text-center">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-yellow-600 hover:bg-yellow-500 text-neutral-950 font-bold rounded-lg transition-all shadow-lg hover:shadow-xl hover:scale-105"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-5 h-5"
+            >
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+            <span>TOPページに戻る</span>
+          </Link>
+        </div>
         </main>
 
         {/* サイドバー - 位置5（追従広告） */}

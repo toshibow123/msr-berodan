@@ -59,7 +59,7 @@ const VitalityPromoSection: React.FC = () => {
       {/* SPONSORED CONTENT 区切り線 */}
       <div className="w-full border-t border-neutral-800 relative">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-neutral-950 px-6 py-2 text-yellow-500 font-bold tracking-widest text-sm">
-          SPONSORED CONTENT
+          PR・SPONSORED CONTENT
         </div>
       </div>
 
@@ -197,7 +197,8 @@ const VitalityPromoSection: React.FC = () => {
             title="マカ＆シトルリン Plus"
             description="亜鉛に加えて、血管拡張をサポートするシトルリンを配合。圧倒的硬度。"
             tag="即効性重視"
-            imageUrl="https://picsum.photos/seed/supplement/400/300"
+            imageUrl="/images/products/スクリーンショット 2025-12-28 13.01.52.png"
+            affiliateUrl="https://amzn.to/48X2Wap"
           />
         </div>
       </section>
@@ -216,17 +217,19 @@ const VitalityPromoSection: React.FC = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <VitalityProductCard
-            title="ULTRA SILKY - 究極の密着"
+            title="おなつゆ トイズハート"
             description="人肌を超える弾力と潤い。亜鉛で高まった感度を逃さない。"
             tag="殿堂入り"
-            imageUrl="https://picsum.photos/seed/toy1/400/300"
+            imageUrl="/images/products/スクリーンショット 2025-12-28 13.17.40.png"
+            affiliateUrl="https://amzn.to/3KNwJJy"
             isGood
           />
           <VitalityProductCard
-            title="VOICE CONTROL - 聴覚刺激"
+            title="TENGA テンガ プレミアム・オリジナルバキューム・カップ"
             description="最新のバイブレーション機能と連動。脳がとろける没入感。"
             tag="最新テクノロジー"
-            imageUrl="https://picsum.photos/seed/toy2/400/300"
+            imageUrl="/images/products/スクリーンショット 2025-12-28 13.18.45.png"
+            affiliateUrl="https://amzn.to/48YEe9L"
             isGood
           />
         </div>

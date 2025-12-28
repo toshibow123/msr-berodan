@@ -41,9 +41,13 @@ const VitalityProductCard: React.FC<VitalityProductCardProps> = ({
 }) => {
   return (
     <div className={`group relative bg-neutral-900 border ${isGood ? 'border-indigo-500/20' : 'border-neutral-800'} rounded-xl overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(245,158,11,0.1)]`}>
-      <div className="absolute top-2 left-2 z-10">
+      <div className="absolute top-2 left-2 z-10 flex gap-2">
         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter ${isGood ? 'bg-indigo-600 text-white' : 'bg-yellow-500 text-neutral-950'}`}>
           {tag}
+        </span>
+        {/* PR表示追加 */}
+        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-neutral-800 text-neutral-400 border border-neutral-700">
+          PR
         </span>
       </div>
       

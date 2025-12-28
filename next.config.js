@@ -1,6 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // カラフルボックスなどの静的ホスティング用に設定
+  output: 'export', // 静的サイトとしてエクスポート
+  
+  // トレイリングスラッシュを有効化（ディレクトリ構造を維持し、404エラーを防ぐ）
+  trailingSlash: true,
+  
   images: {
+    // 静的エクスポート時は画像最適化を無効化（必須）
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
