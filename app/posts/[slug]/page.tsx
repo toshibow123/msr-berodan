@@ -283,14 +283,29 @@ export default async function PostPage({
           <ArticleContentWithAds htmlContent={post.content || ''} />
         </article>
 
-        {/* 広告ウィジェット - 位置4 */}
-        <div 
-          className="my-8 flex justify-center w-full" 
-          style={{ minHeight: '250px' }}
-          dangerouslySetInnerHTML={{
-            __html: `<ins class="dmm-widget-placement" data-id="f8bfa16b6ea380c9d074a49090eed3b0" style="background:transparent"></ins><script src="https://widget-view.dmm.co.jp/js/placement.js" class="dmm-widget-scripts" data-id="f8bfa16b6ea380c9d074a49090eed3b0"></script>`
-          }}
+        {/* FANZA TVサブスク誘導カード（結びの言葉のすぐ下） */}
+        <SubscriptionPromoCard 
+          singleAffiliateUrl={post.affiliateLink}
+          affiliateUrl="https://al.fanza.co.jp/?lurl=https%3A%2F%2Fpremium.dmm.co.jp%2Fbenefit%2F&af_id=toshichan-002&ch=link_tool&ch_id=text"
         />
+
+        {/* 広告ウィジェット - 位置4 */}
+        <div className="my-8 flex justify-center gap-4 w-full flex-wrap">
+          <div 
+            className="flex justify-center" 
+            style={{ minHeight: '250px', flex: '1 1 300px' }}
+            dangerouslySetInnerHTML={{
+              __html: `<ins class="dmm-widget-placement" data-id="f8bfa16b6ea380c9d074a49090eed3b0" style="background:transparent"></ins><script src="https://widget-view.dmm.co.jp/js/placement.js" class="dmm-widget-scripts" data-id="f8bfa16b6ea380c9d074a49090eed3b0"></script>`
+            }}
+          />
+          <div 
+            className="flex justify-center" 
+            style={{ minHeight: '250px', flex: '1 1 300px' }}
+            dangerouslySetInnerHTML={{
+              __html: `<ins class="dmm-widget-placement" data-id="2e1bcfda38effdd988921925f0c34cbb" style="background:transparent"></ins><script src="https://widget-view.dmm.co.jp/js/placement.js" class="dmm-widget-scripts" data-id="2e1bcfda38effdd988921925f0c34cbb"></script>`
+            }}
+          />
+        </div>
 
         {/* サプリLPセクション */}
         <VitalityPromoSection />
