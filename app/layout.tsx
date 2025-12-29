@@ -50,6 +50,20 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
+      <head>
+        {/* Google tag (gtag.js) */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-XZ34MB2TY4"></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-XZ34MB2TY4');
+            `,
+          }}
+        />
+      </head>
       <body className={notoSansJP.variable}>
         <div className="min-h-screen flex flex-col bg-neutral-950">
           {children}

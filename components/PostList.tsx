@@ -55,6 +55,7 @@ export default function PostList({ allPosts }: PostListProps) {
   const searchParams = useSearchParams()
   const [selectedTag, setSelectedTag] = useState<string | undefined>(undefined)
   const [selectedYear, setSelectedYear] = useState<string | undefined>(undefined)
+  const [showAllPosts, setShowAllPosts] = useState(false)
 
   useEffect(() => {
     const tag = searchParams.get('tag')
@@ -82,6 +83,11 @@ export default function PostList({ allPosts }: PostListProps) {
       return year === selectedYear
     })
   }
+
+  // 最初の10個と残りを分ける
+  const visiblePosts = posts.slice(0, 10)
+  const hiddenPosts = posts.slice(10)
+  const displayPosts = showAllPosts ? posts : visiblePosts
 
   return (
     <>
@@ -118,8 +124,9 @@ export default function PostList({ allPosts }: PostListProps) {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {posts.map((post) => {
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {displayPosts.map((post) => {
             const year = extractYear(post.tags)
             const rating = getRating(post)
             
@@ -186,7 +193,18 @@ export default function PostList({ allPosts }: PostListProps) {
               </Link>
             )
           })}
-        </div>
+          </div>
+          {hiddenPosts.length > 0 && (
+            <div className="mt-8 text-center">
+              <button
+                onClick={() => setShowAllPosts(!showAllPosts)}
+                className="px-6 py-3 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-yellow-500 border border-neutral-700 hover:border-yellow-500 rounded-lg transition-colors"
+              >
+                {showAllPosts ? '▲ 折りたたむ' : `▼ もっと見る (${hiddenPosts.length}件)`}
+              </button>
+            </div>
+          )}
+        </>
       )}
     </>
   )
