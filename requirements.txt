@@ -3,7 +3,11 @@
 # Gemini API（記事生成用）
 google-generativeai>=0.3.0
 
+# Webスクレイピング用（generate_cursor_prompt.py）
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+pyperclip>=1.8.2
+
 # オプション: より高度な機能が必要な場合
-# requests>=2.31.0  # urllib.requestの代わりに使用可能
 # python-dotenv>=1.0.0  # .envファイルの自動読み込み
 

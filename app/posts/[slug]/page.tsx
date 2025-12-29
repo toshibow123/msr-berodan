@@ -216,7 +216,7 @@ export default async function PostPage({
 
           {post.date && (
             <time className="text-neutral-500 text-sm">
-              発売日: {post.date}
+              記事更新日: {post.date}
             </time>
           )}
         </div>
