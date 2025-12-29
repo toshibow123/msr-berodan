@@ -10,7 +10,10 @@
     "deploy": "npm run build && npx wrangler pages deploy out"
   },
   "dependencies": {
+    "@types/dompurify": "^3.0.5",
+    "dompurify": "^3.3.1",
     "gray-matter": "^4.0.3",
+    "isomorphic-dompurify": "^2.35.0",
     "next": "^16.1.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",

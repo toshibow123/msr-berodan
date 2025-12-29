@@ -4,8 +4,8 @@ import type { Metadata } from 'next'
 import { getPostBySlug, getAllPostSlugs, getAllPosts } from '@/lib/posts'
 import ArticleRadarChart from '@/components/RadarChart'
 import SubscriptionPromoCard from '@/components/SubscriptionPromoCard'
-import DmmAdWidgetSimple from '@/components/DmmAdWidgetSimple'
-import DmmAdWidgetStatic from '@/components/DmmAdWidgetStatic'
+import DmmAdBanner from '@/components/DmmAdBanner'
+import DmmAdWidget from '@/components/DmmAdWidget'
 import DmmCampaignBanner from '@/components/DmmCampaignBanner'
 import ArticleContentWithAds from '@/components/ArticleContentWithAds'
 import VitalityPromoSection from '@/components/VitalityPromoSection'
@@ -174,6 +174,7 @@ export default async function PostPage({
   return (
     <>
       {/* 構造化データ（JSON-LD） */}
+      {/* JSON.stringifyでエスケープされているため、XSSリスクは低い */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -276,7 +277,15 @@ export default async function PostPage({
         )}
 
         {/* 広告ウィジェット - 位置2 */}
-        <DmmAdWidgetSimple adId="66426b1e79607f67541f15ec05ea7c8c" />
+        <div className="my-8 flex justify-center gap-4 w-full flex-wrap">
+          <DmmAdBanner 
+            affiliateId="toshichan-002"
+            bannerId="1760_300_250"
+          />
+          <DmmAdWidget 
+            dataId="66426b1e79607f67541f15ec05ea7c8c"
+          />
+        </div>
 
         {/* 本文エリア */}
         <article className="prose prose-invert prose-lg max-w-none mb-20">
@@ -291,19 +300,11 @@ export default async function PostPage({
 
         {/* 広告ウィジェット - 位置4 */}
         <div className="my-8 flex justify-center gap-4 w-full flex-wrap">
-          <div 
-            className="flex justify-center" 
-            style={{ minHeight: '250px', flex: '1 1 300px' }}
-            dangerouslySetInnerHTML={{
-              __html: `<ins class="dmm-widget-placement" data-id="f8bfa16b6ea380c9d074a49090eed3b0" style="background:transparent"></ins><script src="https://widget-view.dmm.co.jp/js/placement.js" class="dmm-widget-scripts" data-id="f8bfa16b6ea380c9d074a49090eed3b0"></script>`
-            }}
+          <DmmAdWidget 
+            dataId="f8bfa16b6ea380c9d074a49090eed3b0"
           />
-          <div 
-            className="flex justify-center" 
-            style={{ minHeight: '250px', flex: '1 1 300px' }}
-            dangerouslySetInnerHTML={{
-              __html: `<ins class="dmm-widget-placement" data-id="2e1bcfda38effdd988921925f0c34cbb" style="background:transparent"></ins><script src="https://widget-view.dmm.co.jp/js/placement.js" class="dmm-widget-scripts" data-id="2e1bcfda38effdd988921925f0c34cbb"></script>`
-            }}
+          <DmmAdWidget 
+            dataId="2e1bcfda38effdd988921925f0c34cbb"
           />
         </div>
 
@@ -347,11 +348,20 @@ export default async function PostPage({
         {/* サイドバー - 位置5（追従広告） */}
         <aside className="lg:w-72 flex-shrink-0">
           <div className="lg:sticky lg:top-24 space-y-6">
-            <DmmAdWidgetSimple adId="3fcb9ba032b420a33838c623ce5fae4c" />
+            <DmmAdWidget 
+              dataId="3fcb9ba032b420a33838c623ce5fae4c"
+              style={{ minHeight: '250px' }}
+            />
             {/* キャンペーンバナー */}
             <DmmCampaignBanner 
               affiliateId="toshichan-002"
               bannerId="1760_300_250"
+            />
+            {/* サイドキャンペーン2 */}
+            <DmmAdBanner 
+              affiliateId="toshichan-002"
+              bannerId="1298_300_250"
+              style={{ minHeight: '250px' }}
             />
           </div>
         </aside>
@@ -371,6 +381,7 @@ export default async function PostPage({
           </a>
         </div>
       )}
+      
       </div>
     </>
   )

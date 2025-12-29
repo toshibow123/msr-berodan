@@ -116,6 +116,12 @@ export default function ContentWithSampleImages({
     }
   }, [selectedImage])
 
+  // 注意: 記事本文は信頼できるソース（自分たちが生成した記事）からのみ取得されるため、
+  // XSSリスクは比較的低いが、より安全にするためにはDOMPurifyでサニタイズすることを推奨
+  // npm install dompurify @types/dompurify を実行後、以下を有効化:
+  // import DOMPurify from 'isomorphic-dompurify'
+  // const sanitizedContent = DOMPurify.sanitize(processedContent)
+  
   return (
     <>
       <div 

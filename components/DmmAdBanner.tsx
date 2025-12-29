@@ -1,18 +1,23 @@
 'use client'
 
-interface DmmCampaignBannerProps {
-  affiliateId?: string
+interface DmmAdBannerProps {
+  affiliateId: string
   bannerId: string
+  className?: string
+  style?: React.CSSProperties
 }
 
 /**
- * DMMキャンペーンバナーコンポーネント
- * DmmAdBannerと同じ実装を使用して、重複を防ぐ
+ * DMMバナー広告コンポーネント
+ * 固定の広告コードのみを使用するため、XSSリスクは低い
+ * 注意: DMMの広告スクリプトはdangerouslySetInnerHTMLで直接HTMLを挿入しないと正しく動作しない
  */
-export default function DmmCampaignBanner({ 
-  affiliateId = 'toshichan-002',
-  bannerId 
-}: DmmCampaignBannerProps) {
+export default function DmmAdBanner({
+  affiliateId,
+  bannerId,
+  className = 'flex justify-center',
+  style = { minHeight: '250px', flex: '1 1 300px' }
+}: DmmAdBannerProps) {
   // 広告コードは固定値のみを使用（外部入力を受け付けない）
   // affiliateIdとbannerIdは固定値のみを受け付ける（ホワイトリスト方式）
   const allowedAffiliateIds = ['toshichan-002']
@@ -30,7 +35,8 @@ export default function DmmCampaignBanner({
   
   return (
     <div 
-      className="my-6 flex justify-center w-full"
+      className={className}
+      style={style}
       suppressHydrationWarning
       dangerouslySetInnerHTML={{ __html: adHtml }}
     />

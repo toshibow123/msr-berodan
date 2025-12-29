@@ -1,83 +1,43 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-
 interface DmmAdWidgetProps {
-  pcId: string
-  mobileId: string
+  dataId: string
+  className?: string
+  style?: React.CSSProperties
 }
 
-export default function DmmAdWidget({ pcId, mobileId }: DmmAdWidgetProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!containerRef.current) return
-
-    // 既存のスクリプトをクリーンアップ
-    const existingScripts = containerRef.current.querySelectorAll('.dmm-widget-scripts')
-    existingScripts.forEach(script => script.remove())
-
-    // 画面サイズに応じてIDを決定
-    const isMobile = window.innerWidth < 768
-    const adId = isMobile ? mobileId : pcId
-
-    // <ins>タグを作成
-    const insElement = containerRef.current.querySelector('.dmm-widget-placement') as HTMLElement
-    if (insElement) {
-      insElement.setAttribute('data-id', adId)
-    }
-
-    // スクリプトを動的に読み込む
-    const script = document.createElement('script')
-    script.src = 'https://widget-view.dmm.com/js/placement.js'
-    script.className = 'dmm-widget-scripts'
-    script.setAttribute('data-id', adId)
-    script.async = true
-
-    containerRef.current.appendChild(script)
-
-    // リサイズ時の処理
-    const handleResize = () => {
-      const currentIsMobile = window.innerWidth < 768
-      const currentAdId = currentIsMobile ? mobileId : pcId
-      
-      if (insElement) {
-        insElement.setAttribute('data-id', currentAdId)
-      }
-      
-      // スクリプトを再読み込み
-      const oldScript = containerRef.current?.querySelector('.dmm-widget-scripts')
-      if (oldScript) {
-        oldScript.remove()
-      }
-      
-      const newScript = document.createElement('script')
-      newScript.src = 'https://widget-view.dmm.com/js/placement.js'
-      newScript.className = 'dmm-widget-scripts'
-      newScript.setAttribute('data-id', currentAdId)
-      newScript.async = true
-      
-      if (containerRef.current) {
-        containerRef.current.appendChild(newScript)
-      }
-    }
-
-    window.addEventListener('resize', handleResize)
-
-    return () => {
-      window.removeEventListener('resize', handleResize)
-      const scripts = containerRef.current?.querySelectorAll('.dmm-widget-scripts')
-      scripts?.forEach(s => s.remove())
-    }
-  }, [pcId, mobileId])
-
+/**
+ * DMMウィジェット広告コンポーネント
+ * 固定の広告コードのみを使用するため、XSSリスクは低い
+ * 注意: DMMの広告スクリプトはdangerouslySetInnerHTMLで直接HTMLを挿入しないと正しく動作しない
+ */
+export default function DmmAdWidget({
+  dataId,
+  className = 'flex justify-center',
+  style = { minHeight: '250px', flex: '1 1 300px' }
+}: DmmAdWidgetProps) {
+  // 広告コードは固定値のみを使用（外部入力を受け付けない）
+  // dataIdはホワイトリスト方式で検証
+  const allowedDataIds = [
+    '66426b1e79607f67541f15ec05ea7c8c',
+    'f8bfa16b6ea380c9d074a49090eed3b0',
+    '2e1bcfda38effdd988921925f0c34cbb',
+    '3fcb9ba032b420a33838c623ce5fae4c',
+    '43a8eba658580aad40df9b33383be12f'
+  ]
+  
+  // ホワイトリストチェック
+  const safeDataId = allowedDataIds.includes(dataId) ? dataId : allowedDataIds[0]
+  
+  // 固定値のみを使用したHTML（XSSリスクは低い）
+  const adHtml = `<ins class="dmm-widget-placement" data-id="${safeDataId}" style="background:transparent"></ins><script src="https://widget-view.dmm.co.jp/js/placement.js" class="dmm-widget-scripts" data-id="${safeDataId}"></script>`
+  
   return (
-    <div ref={containerRef} className="my-8 flex justify-center">
-      <ins
-        className="dmm-widget-placement"
-        data-id={typeof window !== 'undefined' && window.innerWidth < 768 ? mobileId : pcId}
-        style={{ background: 'transparent' }}
-      />
-    </div>
+    <div 
+      className={className}
+      style={style}
+      suppressHydrationWarning
+      dangerouslySetInnerHTML={{ __html: adHtml }}
+    />
   )
 }

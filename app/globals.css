@@ -24,6 +24,18 @@
     border-bottom: 2px solid #3f3f46;
   }
   
+  /* h2タグの直後の画像の余白を減らす（広告が間にない場合） */
+  .prose h2 + img,
+  .prose h2 + a > img {
+    @apply mt-0;
+  }
+  
+  /* 広告の後に画像が来る場合は通常の余白を維持 */
+  .prose h2 + div[class*="my-8"] + img,
+  .prose h2 + div[class*="my-8"] + a > img {
+    @apply mt-4;
+  }
+  
   .prose h3 {
     @apply text-xl font-semibold text-yellow-500 mb-3 mt-6;
   }
