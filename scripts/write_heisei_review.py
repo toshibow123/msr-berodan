@@ -188,9 +188,57 @@ def get_negative_constraints() -> list:
     ]
 
 
-def create_prompt(product_info: dict, description: str = "") -> str:
+def load_example_article(content_dir: Path) -> str | None:
+    """
+    既存の記事からサンプルを読み込む（Frontmatterを除いた本文のみ）
+    
+    Args:
+        content_dir: contentディレクトリのパス
+        
+    Returns:
+        サンプル記事の本文（Frontmatterを除く）、またはNone
+    """
+    if not content_dir.exists():
+        return None
+    
+    # サンプル記事の候補（良い記事を優先）
+    sample_files = [
+        "2025-12-28-h_094ktds00458.md",
+        "2025-12-28-mukd00086.md",
+        "2025-12-28-ircp00027.md",
+    ]
+    
+    for filename in sample_files:
+        filepath = content_dir / filename
+        if filepath.exists():
+            try:
+                with open(filepath, "r", encoding="utf-8") as f:
+                    content = f.read()
+                
+                # Frontmatterを除去（---で囲まれた部分）
+                if content.startswith("---"):
+                    # 最初の---から次の---までをスキップ
+                    parts = content.split("---", 2)
+                    if len(parts) >= 3:
+                        body = parts[2].strip()
+                        if body:
+                            print(f"📚 サンプル記事を読み込みました: {filename}")
+                            return body
+            except Exception as e:
+                print(f"⚠️  サンプル記事の読み込みに失敗: {filename} - {e}")
+                continue
+    
+    return None
+
+
+def create_prompt(product_info: dict, description: str = "", example_article: str | None = None) -> str:
     """
     平成AV名作レビュー記事のプロンプトを作成
+    
+    Args:
+        product_info: 商品情報
+        description: 商品説明
+        example_article: 既存の記事サンプル（本文のみ、Frontmatterなし）
     """
     title = product_info.get("title", "")
     content_id = product_info.get("content_id", "")
@@ -236,9 +284,23 @@ def create_prompt(product_info: dict, description: str = "") -> str:
     ]
     selected_heading = random.choice(first_impression_headings)
     
+    # サンプル記事のセクション（あれば追加）
+    example_section = ""
+    if example_article:
+        example_section = f"""
+# 参考例（既存の記事サンプル）
+以下の記事を参考にして、同じスタイル・トーンで書いてください：
+
+{example_article}
+
+---
+"""
+    
     prompt = f"""# Role
 あなたはAVの熱狂的なファンです。
 深夜に最高の一本を見つけて、興奮のままに掲示板やSNSで語り散らかしている「一人の視聴者」として書いてください。
+
+{example_section}
 
 # スタイル指針
 - スペック（画角、解像度、制作年）などの説明は一切不要。そんなの誰も見てないｗ
@@ -380,9 +442,9 @@ def create_prompt(product_info: dict, description: str = "") -> str:
     return prompt
 
 
-def generate_article(model: genai.GenerativeModel, product_info: dict, description: str = "") -> str | None:
+def generate_article(model: genai.GenerativeModel, product_info: dict, description: str = "", example_article: str | None = None) -> str | None:
     """Gemini APIを使って記事本文を生成"""
-    prompt = create_prompt(product_info, description)
+    prompt = create_prompt(product_info, description, example_article)
     
     try:
         response = model.generate_content(prompt)
@@ -641,9 +703,12 @@ def main():
     print(f"✅ {model_name} を使用します")
     model = genai.GenerativeModel(model_name)
     
+    # 既存の記事サンプルを読み込む
+    example_article = load_example_article(content_dir)
+    
     # 記事を生成
     print("\n✍️  記事生成中...")
-    article_content = generate_article(model, product_info, description=product_info.get("description", ""))
+    article_content = generate_article(model, product_info, description=product_info.get("description", ""), example_article=example_article)
     
     if article_content:
         # 記事を保存（content_idを渡す）

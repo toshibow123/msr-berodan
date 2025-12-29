@@ -75,7 +75,7 @@ const TengaEggPromoSection: React.FC = () => {
               </li>
             </ul>
             <a 
-              href="https://amzn.to/3N337IB" 
+              href="https://amzn.to/3MXaO35" 
               target="_blank"
               rel="sponsored noopener noreferrer"
               className="block w-full text-center bg-yellow-500 hover:bg-yellow-400 text-neutral-950 font-black py-4 rounded-xl transition-transform active:scale-95 shadow-lg shadow-yellow-500/20"
@@ -84,7 +84,7 @@ const TengaEggPromoSection: React.FC = () => {
             </a>
           </div>
           <a 
-            href="https://amzn.to/3N337IB"
+            href="https://amzn.to/3MXaO35"
             target="_blank"
             rel="sponsored noopener noreferrer"
             className="relative group cursor-pointer block"
@@ -145,9 +145,18 @@ const TengaEggPromoSection: React.FC = () => {
                 </div>
               </div>
             </div>
-            <div className="h-64 md:h-auto bg-neutral-800 bg-cover bg-center flex items-center justify-center">
-              <span className="text-neutral-600 text-sm">商品画像</span>
-            </div>
+            <a 
+              href="https://amzn.to/44N9u9f"
+              target="_blank"
+              rel="sponsored noopener noreferrer"
+              className="h-64 md:h-auto bg-neutral-800 bg-cover bg-center flex items-center justify-center overflow-hidden block hover:opacity-90 transition-opacity"
+            >
+              <img 
+                src="/images/products/スクリーンショット 2025-12-29 9.26.33.png" 
+                alt="世界を驚かせたサイズ感" 
+                className="w-full h-full object-cover"
+              />
+            </a>
           </div>
         </div>
       </section>
@@ -182,7 +191,7 @@ const TengaEggPromoSection: React.FC = () => {
               </li>
             </ul>
             <a 
-              href="https://amzn.to/3N337IB" 
+              href="https://amzn.to/3MXaO35" 
               target="_blank"
               rel="sponsored noopener noreferrer"
               className="block w-full text-center bg-yellow-500 hover:bg-yellow-400 text-neutral-950 font-black py-3 rounded-xl transition-all"
@@ -213,7 +222,7 @@ const TengaEggPromoSection: React.FC = () => {
               </li>
             </ul>
             <a 
-              href="https://amzn.to/4p9vWk1" 
+              href="https://amzn.to/4qob3mc" 
               target="_blank"
               rel="sponsored noopener noreferrer"
               className="block w-full text-center border border-neutral-700 hover:border-neutral-500 text-neutral-300 font-bold py-3 rounded-xl transition-all"
@@ -244,7 +253,7 @@ const TengaEggPromoSection: React.FC = () => {
           <p className="font-bold mb-8 opacity-80">この刺激、一度知ったらもう戻れない。</p>
           <div className="flex flex-col md:flex-row gap-4 justify-center">
             <a 
-              href="https://amzn.to/3N337IB" 
+              href="https://amzn.to/3MXaO35" 
               target="_blank"
               rel="sponsored noopener noreferrer"
               className="bg-neutral-950 text-white px-8 py-4 rounded-xl font-black hover:scale-105 transition-transform inline-flex items-center justify-center"
@@ -252,7 +261,7 @@ const TengaEggPromoSection: React.FC = () => {
               🛒 12種パックを購入
             </a>
             <a 
-              href="https://amzn.to/4p9vWk1" 
+              href="https://amzn.to/4qob3mc" 
               target="_blank"
               rel="sponsored noopener noreferrer"
               className="bg-white/20 backdrop-blur-md text-neutral-950 px-8 py-4 rounded-xl font-black hover:bg-white/30 transition-all inline-flex items-center justify-center"

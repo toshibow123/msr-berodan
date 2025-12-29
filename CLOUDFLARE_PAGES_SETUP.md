@@ -122,6 +122,30 @@ npx wrangler pages deploy out
 
 ## 🔍 トラブルシューティング
 
+### 「No build command specified」エラー
+
+ログに以下のエラーが表示される場合：
+
+```
+No build command specified. Skipping build step.
+Error: Output directory "out" not found.
+```
+
+**原因:**
+Cloudflare Pagesのダッシュボードで「Build command」が設定されていません。
+
+**解決方法:**
+1. [Cloudflareダッシュボード](https://dash.cloudflare.com)にログイン
+2. 「Workers & Pages」→ プロジェクト「adult-affi」を選択
+3. 「Settings」タブをクリック
+4. 「Builds & deployments」セクションを開く
+5. 「Build command」フィールドに `npm run build` を入力
+6. 「Build output directory」フィールドに `out` を入力
+7. 「Save」をクリック
+8. 自動的に再デプロイが開始されます
+
+⚠️ **重要**: `wrangler.toml`にはビルドコマンドを書けません。必ずCloudflareダッシュボードで設定してください。
+
 ### ビルドは成功するがデプロイが失敗する
 
 - 「Deploy command」が設定されていないか確認

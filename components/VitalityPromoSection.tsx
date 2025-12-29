@@ -198,7 +198,7 @@ const VitalityPromoSection: React.FC = () => {
             description="亜鉛に加えて、血管拡張をサポートするシトルリンを配合。圧倒的硬度。"
             tag="即効性重視"
             imageUrl="/images/products/スクリーンショット 2025-12-28 13.01.52.png"
-            affiliateUrl="https://amzn.to/48X2Wap"
+            affiliateUrl="https://amzn.to/3L1HNTn"
           />
         </div>
       </section>
@@ -221,7 +221,7 @@ const VitalityPromoSection: React.FC = () => {
             description="人肌を超える弾力と潤い。亜鉛で高まった感度を逃さない。"
             tag="殿堂入り"
             imageUrl="/images/products/スクリーンショット 2025-12-28 13.17.40.png"
-            affiliateUrl="https://amzn.to/3KNwJJy"
+            affiliateUrl="https://amzn.to/4qrGgVs"
             isGood
           />
           <VitalityProductCard
@@ -229,7 +229,7 @@ const VitalityPromoSection: React.FC = () => {
             description="最新のバイブレーション機能と連動。脳がとろける没入感。"
             tag="最新テクノロジー"
             imageUrl="/images/products/スクリーンショット 2025-12-28 13.18.45.png"
-            affiliateUrl="https://amzn.to/48YEe9L"
+            affiliateUrl="https://amzn.to/49ePOfA"
             isGood
           />
         </div>
