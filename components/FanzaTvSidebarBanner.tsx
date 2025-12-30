@@ -12,7 +12,12 @@ export default function FanzaTvSidebarBanner({ affiliateUrl }: FanzaTvSidebarBan
   const [imageError, setImageError] = useState(false)
 
   return (
-    <div className="bg-neutral-900 rounded-lg border border-neutral-800 overflow-hidden">
+    <div className="bg-elegant-bg-light rounded-xl border border-elegant-border overflow-hidden shadow-lg">
+      {/* PR表示 */}
+      <div className="text-center pt-3 pb-2">
+        <span className="text-xs text-elegant-text-dark font-medium bg-elegant-bg-lighter px-3 py-1 rounded-full border border-elegant-border">PR・アフィリエイト広告</span>
+      </div>
+
       {/* 画像ボタンエリア */}
       <Link
         href={affiliateUrl}
@@ -20,7 +25,7 @@ export default function FanzaTvSidebarBanner({ affiliateUrl }: FanzaTvSidebarBan
         rel="noopener noreferrer sponsored"
         className="block w-full active:scale-95 transition-transform"
       >
-        <div className="relative w-full aspect-[3/1] bg-neutral-800 flex items-center justify-center">
+        <div className="relative w-full aspect-[3/1] bg-elegant-bg-lighter flex items-center justify-center">
           {!imageError ? (
             <Image
               src="/images/fanza_tv_btn.png"
@@ -30,28 +35,28 @@ export default function FanzaTvSidebarBanner({ affiliateUrl }: FanzaTvSidebarBan
               onError={() => setImageError(true)}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-yellow-600 to-yellow-500">
-              <span className="text-neutral-950 font-bold text-lg">FANZA TV</span>
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-elegant-wine/40 to-elegant-wine-dark/40">
+              <span className="text-elegant-wine font-serif-jp font-bold text-lg">FANZA TV</span>
             </div>
           )}
         </div>
       </Link>
 
       {/* 訴求テキストエリア */}
-      <div className="p-4 bg-neutral-800 border-t-2 border-yellow-600">
-        <p className="text-neutral-200 text-sm mb-2 text-center">
-          DMMプレミアムなら<strong className="text-yellow-500">追加料金なし</strong>！
+      <div className="p-4 bg-gradient-to-br from-elegant-wine/20 to-elegant-wine-dark/20 border-t-2 border-elegant-wine/30">
+        <p className="text-elegant-text-light text-sm mb-2 text-center">
+          DMMプレミアムなら<strong className="text-elegant-wine">追加料金なし</strong>！
         </p>
         <p className="text-center mb-2">
-          <span className="text-yellow-500 font-bold text-lg">
-            <strong className="text-yellow-500">14日間無料</strong>
+          <span className="text-elegant-wine font-bold text-lg">
+            <strong className="text-elegant-wine">14日間無料</strong>
           </span>
-          <span className="text-neutral-300 mx-1">＆</span>
-          <span className="text-yellow-500 font-bold text-lg">
-            <strong className="text-yellow-500">550pt</strong>即時付与
+          <span className="text-elegant-text-light mx-1">＆</span>
+          <span className="text-elegant-wine font-bold text-lg">
+            <strong className="text-elegant-wine">550pt</strong>即時付与
           </span>
         </p>
-        <p className="text-neutral-400 text-xs text-center">
+        <p className="text-elegant-text-dark text-xs text-center">
           登録後すぐに新作も買える！
         </p>
       </div>

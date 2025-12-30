@@ -17,6 +17,11 @@ export interface PostData {
   tags?: string[]
   content?: string
   rating?: number  // 評価（4.0-5.0）
+  contentId?: string  // 品番
+  genre?: string[]  // ジャンル（熟女、人妻、ドラマ）
+  storyScore?: number  // ストーリー評価
+  actingScore?: number  // 演技評価
+  atmosphereScore?: number  // 雰囲気評価
 }
 
 export async function getAllPosts(): Promise<PostData[]> {
@@ -44,6 +49,11 @@ export async function getAllPosts(): Promise<PostData[]> {
         subAffiliateLink: data.subAffiliateLink || '',
         tags: data.tags || [],
         rating: data.rating ? parseFloat(data.rating) : undefined,
+        contentId: data.contentId || '',
+        genre: data.genre || [],
+        storyScore: data.storyScore ? parseFloat(data.storyScore) : undefined,
+        actingScore: data.actingScore ? parseFloat(data.actingScore) : undefined,
+        atmosphereScore: data.atmosphereScore ? parseFloat(data.atmosphereScore) : undefined,
       }
     })
 
@@ -85,6 +95,18 @@ export async function getPostBySlug(slug: string): Promise<PostData | null> {
       return `<a href="${url}"${attrs} target="_blank" rel="noopener noreferrer sponsored">`
     }
   )
+  
+  // サンプル動画のiframeの後にマーカーを挿入（クライアントコンポーネントで置き換え用）
+  contentHtml = contentHtml.replace(
+    /(<div[^>]*style="[^"]*padding-top[^"]*"[^>]*>[\s\S]*?<\/iframe><\/div>)/gi,
+    (match) => {
+      // 既にマーカーが挿入されている場合はスキップ
+      if (match.includes('data-fanza-promo-marker')) {
+        return match
+      }
+      return match + '<div data-fanza-promo-marker="true"></div>'
+    }
+  )
 
   return {
     slug,
@@ -97,6 +119,11 @@ export async function getPostBySlug(slug: string): Promise<PostData | null> {
     tags: data.tags || [],
     content: contentHtml,
     rating: data.rating ? parseFloat(data.rating) : undefined,
+    contentId: data.contentId || '',
+    genre: data.genre || [],
+    storyScore: data.storyScore ? parseFloat(data.storyScore) : undefined,
+    actingScore: data.actingScore ? parseFloat(data.actingScore) : undefined,
+    atmosphereScore: data.atmosphereScore ? parseFloat(data.atmosphereScore) : undefined,
   }
 }
 

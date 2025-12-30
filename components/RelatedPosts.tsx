@@ -83,7 +83,7 @@ export default function RelatedPosts({ currentSlug, currentTags, allPosts }: Rel
 
   return (
     <section className="mt-16 mb-8">
-      <h2 className="text-2xl font-bold text-neutral-100 mb-6">
+      <h2 className="text-2xl font-serif-jp font-bold text-elegant-wine mb-6">
         あなたにおすすめの作品
       </h2>
       
@@ -96,11 +96,11 @@ export default function RelatedPosts({ currentSlug, currentTags, allPosts }: Rel
             <Link
               key={post.slug}
               href={`/posts/${post.slug}`}
-              className="group bg-neutral-900 rounded-lg overflow-hidden border border-neutral-800 hover:border-yellow-500 transition-all hover:shadow-xl hover:shadow-yellow-500/10"
+              className="group bg-elegant-bg-light rounded-lg overflow-hidden border border-elegant-border hover:border-elegant-wine transition-all hover:shadow-xl hover:shadow-elegant-wine/20"
             >
               {/* 画像 */}
               {post.image && (
-                <div className="aspect-[3/4] overflow-hidden bg-neutral-800">
+                <div className="aspect-[3/4] overflow-hidden bg-elegant-bg-lighter">
                   <img
                     src={post.image}
                     alt={post.title}
@@ -112,18 +112,18 @@ export default function RelatedPosts({ currentSlug, currentTags, allPosts }: Rel
               {/* メタ情報 */}
               <div className="p-3">
                 <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-1 text-yellow-500">
-                    <Star className="w-4 h-4 fill-yellow-500" />
+                  <div className="flex items-center gap-1 text-elegant-gold">
+                    <Star className="w-4 h-4 fill-elegant-gold" />
                     <span className="text-sm font-bold">{rating}</span>
                   </div>
                   {year && (
-                    <span className="text-xs text-neutral-400 bg-neutral-800 px-2 py-1 rounded">
+                    <span className="text-xs text-elegant-text-light bg-elegant-bg-lighter px-2 py-1 rounded border border-elegant-border">
                       {year}年
                     </span>
                   )}
                 </div>
                 
-                <h3 className="text-sm font-semibold text-neutral-100 line-clamp-2 group-hover:text-yellow-500 transition-colors">
+                <h3 className="text-sm font-semibold text-elegant-text line-clamp-2 group-hover:text-elegant-wine transition-colors">
                   {post.title}
                 </h3>
               </div>

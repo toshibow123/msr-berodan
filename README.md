@@ -1,37 +1,28 @@
-# 平成AV映像遺産 | 旧作・名作レビューサイト
+# 艶めく物語 - 熟女・人妻・ドラマ専門ブログ
 
-ビデオ黄金時代を知る愛好家による、平成の名作AVレビューサイト。
+> 大人の女性の魅力を、官能小説のように綴るレビューサイト
 
-現代では作れない企画、女優の魂、生々しい映像美を再評価します。
+![Next.js](https://img.shields.io/badge/Next.js-14-black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38bdf8)
+![Python](https://img.shields.io/badge/Python-3.11-3776ab)
 
-## コンセプト
+## 🎨 コンセプト
 
-- **ターゲット**: 現代の「綺麗すぎるだけのAV」に飽きている30代〜50代男性
-- **扱う作品**: 2000年代〜2010年代の「平成の名作」
-- **執筆者**: ビデオ黄金時代を知る愛好家
-- **目的**: 画質の良さではなく、「熱量」「企画の狂気」「女優の魂」を再評価
+熟女・人妻・ドラマ作品に特化した、官能小説のような雰囲気を持つアダルトコンテンツレビューブログ。
 
-## 技術スタック
+### 特徴
+- **ラグジュアリーデザイン**: ワインレッド、ゴールド、アイボリーの上品な配色
+- **官能小説的な文体**: 品のある表現で、うっとりするような読後感
+- **女性も楽しめる**: 下品さを感じさせない、洗練されたUI
+- **映画レビューのような視点**: ストーリー分析と演技評価を重視
 
-- **Next.js 16** (App Router)
-- **React 19**
-- **TypeScript**
-- **Tailwind CSS** (レトロ・男性向けデザイン)
-- **Markdown** (gray-matter, remark, rehype)
-- **Python** (記事生成スクリプト)
-- **Google Gemini API** (記事自動生成)
-- **DMM API** (商品情報取得)
+## 🚀 クイックスタート
 
-## セットアップ
-
-### 1. 依存関係のインストール
+### 1. インストール
 
 ```bash
-# Node.js パッケージ
 npm install
-
-# Python パッケージ
-pip3 install google-generativeai
 ```
 
 ### 2. 環境変数の設定
@@ -39,130 +30,208 @@ pip3 install google-generativeai
 `.env`ファイルを作成：
 
 ```bash
-# Google Gemini API
-GEMINI_API_KEY=your_gemini_api_key_here
-
 # DMM API
-DMM_API_ID=your_dmm_api_id_here
-DMM_AFFILIATE_ID=your_affiliate_id_here
+DMM_API_ID=your_dmm_api_id
+DMM_AFFILIATE_ID=your_affiliate_id
+
+# Gemini API
+GEMINI_API_KEY=your_gemini_api_key
+
+# Google Analytics
+NEXT_PUBLIC_GA_ID=your_ga_id
 ```
 
-### 3. 開発サーバーの起動
+### 3. Pythonパッケージのインストール
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. 開発サーバー起動
 
 ```bash
 npm run dev
 ```
 
-http://localhost:3000 でアクセスできます。
+ブラウザで http://localhost:3000 を開く
 
-## 記事の生成
+## 📝 記事生成の流れ
 
-### URL指定で記事を生成
-
-FANZAの商品ページURLを指定して、レビュー記事を生成します：
+### Step 1: ランキング取得
 
 ```bash
-# 環境変数を読み込んでスクリプトを実行
-export $(cat .env | grep -v '^#' | xargs) && python3 scripts/write_heisei_review.py
+python3 scripts/fetch_mature_drama_ranking.py --genre all --hits 50
 ```
 
-スクリプトを実行すると：
-1. FANZAの商品ページURLを入力
-2. DMM APIから商品情報を自動取得
-3. Gemini APIで熱のこもったレビュー記事を生成
-4. `content/`フォルダにMarkdownファイルを保存
+### Step 2: 記事生成
 
-### 記事のフォーマット
-
-生成される記事は以下の構成になります：
-
-```markdown
----
-title: "タイトル ー 平成の名作を語る"
-date: "2025-12-25"
-excerpt: "抜粋"
-image: "画像URL"
-tags: ["2005年", "平成の名作", "女優名"]
-affiliateLink: "アフィリエイトリンク"
-contentId: "品番"
----
-
-## 久しぶりに見返して、震えた
-（再発見の感動）
-
-## 作品名
-（作品情報、パッケージ画像）
-
-## 現代では絶対に作れない企画
-（企画の狂気を語る）
-
-## 女優の魂が宿っている
-（演技、表情、覚悟を称賛）
-
-## 画質の粗さが、逆に良い
-（SD画質の生々しさをポジティブに評価）
-
-## 結論：これは映像遺産だ
-（強く推す）
+```bash
+python3 scripts/bulk_generate_mature_drama_articles.py
 ```
 
-## デザインの特徴
+詳細は [記事生成ガイド](scripts/MATURE_DRAMA_USAGE.md) を参照
+
+## 🏗️ プロジェクト構成
+
+```
+Mrs-Adult/
+├── app/                          # Next.js App Router
+│   ├── layout.tsx               # サイト全体のレイアウト
+│   ├── page.tsx                 # トップページ
+│   ├── posts/[slug]/           # 記事詳細ページ
+│   └── globals.css             # グローバルスタイル
+│
+├── components/                  # Reactコンポーネント
+│   ├── ElegantPostCard.tsx     # 記事カード（ラグジュアリーデザイン）
+│   ├── ElegantPostList.tsx     # 記事一覧
+│   ├── CategoryFilter.tsx      # カテゴリーフィルター
+│   └── ...                     # その他コンポーネント
+│
+├── content/                     # Markdown記事
+│   └── YYYY-MM-DD-{id}.md     # 日付付き記事ファイル
+│
+├── scripts/                     # 記事生成スクリプト
+│   ├── fetch_mature_drama_ranking.py          # ランキング取得
+│   ├── bulk_generate_mature_drama_articles.py # 一括記事生成
+│   ├── generate_mature_drama_article.py       # 個別記事生成
+│   └── MATURE_DRAMA_USAGE.md                  # 使い方ガイド
+│
+├── data/                        # APIから取得したデータ
+│   └── mature_drama_all_latest.json # 最新ランキング
+│
+├── docs/                        # ドキュメント
+│   └── requirements.md         # 要件定義書
+│
+├── lib/                         # ユーティリティ
+│   └── posts.ts                # 記事読み込みロジック
+│
+└── public/                      # 静的ファイル
+    └── images/                 # 画像ファイル
+```
+
+## 🎯 対象ジャンル
+
+以下のいずれかに該当する作品のみを扱います：
+
+### ✅ 対象
+- **熟女作品**: 30代以上の女優、大人の色気
+- **人妻作品**: 人妻・主婦設定、背徳感
+- **ドラマ作品**: ストーリー性の高い作品、NTR、不倫
+
+### ❌ 除外
+- 企画もの（ナンパ、マジックミラー号）
+- ハード系（SM、スカトロ）
+- 若い女優のみの単体作品（ドラマ性がない場合）
+
+## 📊 記事の特徴
+
+### 文体
+```
+❌ NG例（従来のスタイル）:
+「マジでヤバいｗ」「抜けるわｗ」
+
+✅ OK例（新スタイル）:
+「この作品は、大人の女性の色気を存分に堪能できる一本です」
+「彼女の演技は、見る者の心を静かに揺さぶります」
+```
+
+### 構成
+1. **詩的なタイトル** - 心を揺さぶる、禁断の物語
+2. **作品との出会い** - 官能小説のような語り出し
+3. **物語の魅力** - 映画レビューのような分析
+4. **演技と演出の妙** - 女優の演技力を評価
+5. **心に残るシーン** - 官能的な描写（品のある範囲で）
+6. **読者への語りかけ** - 余韻を残す締めくくり
+
+## 🎨 デザインシステム
 
 ### カラーパレット
 
-- **背景**: ダークグレー (`#1a1a1a`)
-- **アクセント**: 落ち着いたゴールド (`#d4a574`)
-- **テキスト**: ライトグレー (`#e0e0e0`)
-- **強調**: ほぼ白 (`#f5f5f5`)
+```css
+/* メインカラー */
+--elegant-wine: #8B2252;          /* 深みのあるワインレッド */
+--elegant-wine-dark: #722F37;     /* ダークワインレッド */
+--elegant-gold: #D4AF37;          /* ゴールド */
+--elegant-champagne: #F0E68C;     /* シャンパンゴールド */
 
-### デザインコンセプト
+/* 背景 */
+--elegant-ivory: #FFF8E7;         /* アイボリー */
+--elegant-beige: #F5F5DC;         /* ベージュ */
+--elegant-cream: #FFFEF0;         /* クリーム */
 
-- ダークテーマで落ち着いた雰囲気
-- レトロな配色（平成時代を彷彿とさせる）
-- 男性向けのシンプルで読みやすいレイアウト
-- ゴールドのアクセントで高級感
-
-## ディレクトリ構造
-
-```
-Adult-affi/
-├── app/                    # Next.js App Router
-│   ├── globals.css        # グローバルスタイル
-│   ├── layout.tsx         # ルートレイアウト
-│   ├── page.tsx           # トップページ
-│   ├── profile/           # プロフィールページ
-│   └── posts/[slug]/      # 記事ページ
-├── components/            # Reactコンポーネント
-├── content/               # Markdown記事ファイル
-├── lib/                   # ユーティリティ関数
-├── public/                # 静的ファイル
-│   └── images/           # 画像ファイル
-├── scripts/               # Pythonスクリプト
-│   └── write_heisei_review.py  # 記事生成スクリプト
-└── tailwind.config.ts     # Tailwind CSS設定
+/* テキスト */
+--elegant-charcoal: #2F2F2F;      /* チャコールグレー */
+--elegant-brown: #3E2723;         /* 深い茶色 */
 ```
 
-## 記事生成の特徴
+### タイポグラフィ
 
-### プロンプトの特徴
+- **見出し**: Noto Serif JP（明朝体）- 優雅で読みやすい
+- **本文**: Noto Sans JP（ゴシック体）- 可読性重視
+- **行間**: 1.9〜2.0 - 余白を活かす
+- **文字サイズ**: 17px以上 - 読みやすさ優先
 
-- **現代作品との対比**: 頻繁に現代のAVと比較
-- **画質の古さをポジティブ変換**: SD画質を「生々しさ」として評価
-- **女優の覚悟を称賛**: 体当たりの演技をリスペクト
-- **熱量のある語り**: 落ち着いた常体、または熱っぽい語り口
+## 🛠️ 技術スタック
 
-### レビューの方針
+### フロントエンド
+- **Next.js 14** - React フレームワーク
+- **TypeScript** - 型安全な開発
+- **Tailwind CSS** - ユーティリティファーストCSS
+- **React** - UIライブラリ
 
-- 批判ではなく、**リスペクト**
-- 悪口ではなく、**再評価**
-- 「500円だろうが定価だろうが、これは映像遺産として持っておくべき」という強い推し
+### バックエンド（記事生成）
+- **Python 3.11+** - スクリプト言語
+- **Gemini API** - AI記事生成
+- **DMM API** - 作品情報取得
+- **BeautifulSoup4** - Webスクレイピング
 
-## ライセンス
+### デプロイ
+- **Vercel** - 推奨デプロイ先
+- **Cloudflare Pages** - 代替デプロイ先
 
-個人プロジェクト
+## 📈 KPI・成功指標
 
-## 注意事項
+### コンテンツKPI
+- 記事数: 100本以上（3ヶ月）
+- 平均文字数: 2,500文字以上
+- 記事品質スコア: 4.0以上
 
-- 当サイトは18歳以上の方を対象としています
-- アフィリエイトプログラムに参加しています
-- レビューは個人の感想です
+### ユーザーKPI
+- 平均滞在時間: 3分以上
+- 直帰率: 60%以下
+- ページ/セッション: 2.5以上
+
+## 📚 ドキュメント
+
+- [要件定義書](docs/requirements.md) - サイトの詳細仕様
+- [記事生成ガイド](scripts/MATURE_DRAMA_USAGE.md) - スクリプトの使い方
+- [デプロイガイド](DEPLOY.md) - 本番環境へのデプロイ方法
+
+## 🔐 セキュリティ
+
+- **18歳未満の閲覧制限** - 必須の明記
+- **プライバシーポリシー** - 整備必須
+- **利用規約** - 整備必須
+- **DMM API利用規約** - 遵守
+
+## 🤝 コントリビューション
+
+このプロジェトはプライベートプロジェクトですが、改善提案は歓迎します。
+
+## 📄 ライセンス
+
+© 2025 艶めく物語. All rights reserved.
+
+---
+
+## 🎯 次のステップ
+
+1. **記事生成**: [記事生成ガイド](scripts/MATURE_DRAMA_USAGE.md)を参照
+2. **デザイン調整**: `tailwind.config.ts`でカラーを微調整
+3. **SEO対策**: メタデータの最適化
+4. **アクセス解析**: Google Analytics設定
+5. **デプロイ**: Vercelへのデプロイ
+
+---
+
+**艶めく物語で、大人の女性の魅力を語りましょう ✨**

@@ -11,6 +11,19 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+# .envファイルの読み込み
+try:
+    from dotenv import load_dotenv
+    # プロジェクトルートの.envファイルを読み込む
+    script_dir = Path(__file__).parent
+    project_root = script_dir.parent
+    env_path = project_root / ".env"
+    if env_path.exists():
+        load_dotenv(env_path)
+except ImportError:
+    # python-dotenvがインストールされていない場合はスキップ
+    pass
+
 # ============================================================================
 # 設定項目
 # ============================================================================

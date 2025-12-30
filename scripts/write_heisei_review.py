@@ -19,6 +19,19 @@ import urllib.error
 import ssl
 from urllib.parse import urlencode, parse_qs, urlparse
 
+# .envファイルの読み込み
+try:
+    from dotenv import load_dotenv
+    # プロジェクトルートの.envファイルを読み込む
+    script_dir = Path(__file__).parent
+    project_root = script_dir.parent
+    env_path = project_root / ".env"
+    if env_path.exists():
+        load_dotenv(env_path)
+except ImportError:
+    # python-dotenvがインストールされていない場合はスキップ
+    pass
+
 
 def initialize_gemini(api_key: str):
     """Gemini APIを初期化"""

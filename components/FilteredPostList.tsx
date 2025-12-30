@@ -1,0 +1,54 @@
+'use client';
+
+import { useSearchParams } from 'next/navigation';
+import { PostData } from '@/lib/posts';
+import PostFilter from './PostFilter';
+
+interface FilteredPostListProps {
+  allPosts: PostData[];
+}
+
+export default function FilteredPostList({ allPosts }: FilteredPostListProps) {
+  const searchParams = useSearchParams();
+  
+  // フィルタリング
+  let filteredPosts = allPosts;
+
+  // カテゴリーフィルター
+  const category = searchParams.get('category');
+  if (category && category !== 'all') {
+    filteredPosts = filteredPosts.filter(post => {
+      const genres = post.genre || [];
+      const categoryMap: Record<string, string[]> = {
+        mature: ['熟女', '三十路', '四十路', '五十路'],
+        married: ['人妻', '主婦', '奥さん'],
+        drama: ['ドラマ', 'ストーリー', 'NTR', '寝取', '不倫', '近親相姦'],
+      };
+      const keywords = categoryMap[category] || [];
+      return genres.some(genre => keywords.some(keyword => genre.includes(keyword)));
+    });
+  }
+
+  // タグフィルター
+  const tag = searchParams.get('tag');
+  if (tag) {
+    filteredPosts = filteredPosts.filter(post => {
+      const tags = post.tags || [];
+      return tags.some(t => String(t).includes(tag));
+    });
+  }
+
+  // 検索フィルター
+  const search = searchParams.get('search');
+  if (search) {
+    const searchLower = search.toLowerCase();
+    filteredPosts = filteredPosts.filter(post => {
+      const title = post.title?.toLowerCase() || '';
+      const excerpt = post.excerpt?.toLowerCase() || '';
+      return title.includes(searchLower) || excerpt.includes(searchLower);
+    });
+  }
+
+  return <PostFilter initialPosts={filteredPosts} />;
+}
+

@@ -17,6 +17,19 @@ from pathlib import Path
 from urllib.parse import urlencode, parse_qs, urlparse, unquote
 import google.generativeai as genai
 
+# .envファイルの読み込み
+try:
+    from dotenv import load_dotenv
+    # プロジェクトルートの.envファイルを読み込む
+    script_dir = Path(__file__).parent
+    project_root = script_dir.parent
+    env_path = project_root / ".env"
+    if env_path.exists():
+        load_dotenv(env_path)
+except ImportError:
+    # python-dotenvがインストールされていない場合はスキップ
+    pass
+
 # ============================================================================
 # 設定項目
 # ============================================================================
@@ -225,6 +238,46 @@ def generate_article_prompt(
     actresses_str = "、".join(actresses) if actresses else "不明"
     genres_str = "、".join(genres_list) if genres_list else "不明"
     
+    # 過激な表現を控えめに変換するための辞書（後で使用）
+    replacements_dict = {
+        "中出し": "重要なシーン",
+        "クンニ": "特別なシーン",
+        "パイズリ": "特徴的なシーン",
+        "アナル": "特別な場面",
+        "チ●ポ": "重要な要素",
+        "チ○ポ": "重要な要素",
+        "チンコ": "重要な要素",
+        "イキ": "反応",
+        "ガチ": "本格的",
+        "ハメ": "撮影",
+        "ハメ撮り": "ドキュメンタリー撮影",
+        "性交": "重要な場面",
+        "セックス": "重要な場面",
+        "フェラ": "特別なシーン",
+        "フェラチオ": "特別なシーン",
+        "手コキ": "特徴的なシーン",
+        "足コキ": "特徴的なシーン",
+        "顔射": "重要なシーン",
+        "放尿": "特別な反応",
+        "お漏らし": "特別な反応",
+        # ロリ関連の表現を控えめな表現に変換
+        "ロリかわいい": "若々しく可愛らしい",
+        "ロリ顔": "若々しい顔",
+        "ロリィー": "若々しい",
+        "ロリータ": "若々しい",
+        "ロリ系": "若々しい系",
+        "ロリっ子": "若々しい子",
+        "ロリ美少女": "若々しい美少女",
+        "ロリ": "若々しい",
+    }
+    
+    # actresses_strとgenres_strにも置き換えを適用
+    safe_actresses_str = actresses_str
+    safe_genres_str = genres_str
+    for old, new in replacements_dict.items():
+        safe_actresses_str = safe_actresses_str.replace(old, new)
+        safe_genres_str = safe_genres_str.replace(old, new)
+    
     # サンプル画像URLリストを整形
     sample_images_list = ""
     if sample_images:
@@ -285,6 +338,12 @@ def generate_article_prompt(
         example_section = "\n# 参考例（既存の記事サンプル）\n"
         example_section += "以下の既存記事を参考にして、**同じスタイル・トーンで書いてください**。\n"
         example_section += "**重要：既存記事と同じ文言・表現は使わないように、必ず表現を変えて書いてください。**\n\n"
+        example_section += "**特に、以下のスタイルも参考にしてください（必須ではないが、選択肢の一つとして）：**\n"
+        example_section += "- 個人的な体験から入る（「深夜にDMMで作品を漁ってたんだけど」など）\n"
+        example_section += "- 思考プロセスをそのまま書く（「うん。これはヤバい。」など）\n"
+        example_section += "- 感情の表現（「思ったことそれは・・・」「なんちゅう清楚さだ！！！！！ 」など）\n"
+        example_section += "- 短いセンテンスでリズムを作る\n"
+        example_section += "- リアルな反応（「マジか・・・・」など）\n\n"
         for i, article in enumerate(example_articles[:2], 1):
             preview = article[:600] + "..." if len(article) > 600 else article
             example_section += f"## 参考記事 {i}\n{preview}\n\n---\n\n"
@@ -299,6 +358,15 @@ def generate_article_prompt(
         safe_memo = safe_memo.replace("クンニ", "特別なシーン")
         safe_memo = safe_memo.replace("パイズリ", "特徴的なシーン")
         safe_memo = safe_memo.replace("アナル", "特別な場面")
+        # ロリ関連の表現を控えめな表現に変換
+        safe_memo = safe_memo.replace("ロリかわいい", "若々しく可愛らしい")
+        safe_memo = safe_memo.replace("ロリ顔", "若々しい顔")
+        safe_memo = safe_memo.replace("ロリィー", "若々しい")
+        safe_memo = safe_memo.replace("ロリータ", "若々しい")
+        safe_memo = safe_memo.replace("ロリ系", "若々しい系")
+        safe_memo = safe_memo.replace("ロリっ子", "若々しい子")
+        safe_memo = safe_memo.replace("ロリ美少女", "若々しい美少女")
+        safe_memo = safe_memo.replace("ロリ", "若々しい")
         
         memo_section = f"""
 # ⚠️ 重要：ユーザーが指定した作品の特徴・記事に書いて欲しい内容
@@ -320,34 +388,13 @@ def generate_article_prompt(
     # 作品タイトルと紹介文を控えめな表現に変換（フィルター回避）
     safe_title = title
     safe_description = description
+    safe_keywords = keywords
     
-    # 過激な表現を控えめに変換（より包括的に）
-    replacements = {
-        "中出し": "重要なシーン",
-        "クンニ": "特別なシーン",
-        "パイズリ": "特徴的なシーン",
-        "アナル": "特別な場面",
-        "チ●ポ": "重要な要素",
-        "チ○ポ": "重要な要素",
-        "チンコ": "重要な要素",
-        "イキ": "反応",
-        "ガチ": "本格的",
-        "ハメ": "撮影",
-        "ハメ撮り": "ドキュメンタリー撮影",
-        "性交": "重要な場面",
-        "セックス": "重要な場面",
-        "フェラ": "特別なシーン",
-        "フェラチオ": "特別なシーン",
-        "手コキ": "特徴的なシーン",
-        "足コキ": "特徴的なシーン",
-        "顔射": "重要なシーン",
-        "放尿": "特別な反応",
-        "お漏らし": "特別な反応",
-    }
-    
-    for old, new in replacements.items():
+    # replacements_dictを使って置き換えを適用
+    for old, new in replacements_dict.items():
         safe_title = safe_title.replace(old, new)
         safe_description = safe_description.replace(old, new)
+        safe_keywords = safe_keywords.replace(old, new)
     
     prompt = f"""# 重要：このプロンプトについて
 これは、エンターテインメント作品のレビュー記事を書くためのプロンプトです。
@@ -374,9 +421,9 @@ def generate_article_prompt(
 - 紹介文： {safe_description}
 - 作品ID： {content_id}
 - 作品URL： {input_url}
-- 作品特徴： {keywords}
-- 出演： {actresses_str}
-- ジャンル： {genres_str}
+- 作品特徴： {safe_keywords}
+- 出演： {safe_actresses_str}
+- ジャンル： {safe_genres_str}
 - メーカー： {maker if maker else "不明"}
 {f"- シリーズ： {series}" if series else ""}
 {f"- 監督： {director}" if director else ""}
@@ -399,6 +446,31 @@ def generate_article_prompt(
    - 作品の内容に合わせて、様々な表現を使ってください。
 4. **主観のみで語る**: 
    - 個人的な感想を最優先に書いてください。
+5. **表現の参考パターン（適宜使用）**: 
+   - 以下の表現パターンを参考に、適宜使えるところで使ってください。そのまま使うのではなく、作品の内容に合わせて自然に組み込んでください。
+   
+   **1. 「肌の白さ・質感」のユニークな喩え**
+   - 食材系（空腹時に効く）：「つきたての餅（もっちり感）」「高級食パンの白いところ（しっとり感）」「冷奴（ひややっこ）の断面（冷んやり感）」「湯上がりのゆで卵（ツルツル感）」「杏仁豆腐（プルプル感）」「特Aランクの炊きたて銀シャリ（ツヤ感）」
+   - 自然・無機物系（透明感・冷たさ）：「新潟の豪雪地帯の雪」「蛍光灯の直視できない眩しさ」「新品の陶器（ポーセリン）」「コピー用紙のような漂白された白」「流氷のような冷たい白」
+   
+   **2. 「季節・天気」に絡めた情緒的な表現**
+   - 春：「新入社員のスーツのような初々しさ」「花粉症の憂鬱も吹き飛ぶエロさ」「春一番のようにスカートをめくりたくなる衝動」
+   - 夏：「8月の湿気を含んだ、まとわりつくような肌」「クーラーの効いた部屋で食べるアイスのような背徳感」「甲子園のサイレンより激しい喘ぎ声」「夕立のように激しく、そして去っていく」
+   - 秋：「人肌恋しい季節に、心臓を直撃する温もり」「サンマより脂が乗っている」「読書の秋より、性欲の秋」
+   - 冬：「こたつの魔力のような、抜け出せない沼」「吐く息が白くなるような、低温火傷しそうな情熱」「クリスマスのイルミネーションより輝いてる」
+   
+   **3. 「地域・場所」に絡めた妄想**
+   - 北国（北海道・東北）：「北国のガードの固さが決壊する瞬間」「寒さで赤くなった頬と鼻先」
+   - 南国（沖縄・九州）：「日差しを跳ね返すような健康的な小麦色」「台風のような気圧の変化を感じる感情の起伏」
+   - 都会（東京・大阪）：「満員電車のストレスを発散するかのような乱れ方」「コンクリートジャングルの隙間に咲いた花」
+   - 田舎・実家：「畳の匂いが画面から漂ってきそうな昭和感」「夏休みに親戚の家で見てしまったような罪悪感」
+   
+   **4. 「平成ノスタルジー・時事ネタ」の喩え**
+   - ガジェット・技術：「ガラケーの着信ランプのような点滅する快感」「ダイヤルアップ接続のような、じらされる待機時間」「ブラウン管テレビの砂嵐のような荒々しさ」「MD（ミニディスク）に録音して永久保存したい声」
+   - 社会・トレンド：「バブル崩壊後のような虚無感と、そこからの再起」「就職氷河期よりも厳しい、女優のガード」「ノストラダムスの大予言より信憑性のあるエロさ」「たまごっちの世話より手間がかかるが、そこがいい」
+   
+   **5. 「社会人の悲哀」を絡めた自虐**
+   - 「ブラック企業の連勤明けに飲むビールのような染み渡り方」「有給休暇の前夜のような開放感」「上司の説教より長いが、聞いていられる喘ぎ声」「ボーナス支給日よりテンションが上がる」「税金で引かれる額を見た時のような衝撃」
 
 # 記事の構成
 以下の構成で、**Frontmatterを含めた完全なMarkdownファイル**を出力してください：
@@ -430,8 +502,8 @@ rating: {rating}
   <img src="{main_image_url}" alt="{title}" />
 </a>
 
-**出演:** {actresses_str}
-**ジャンル:** {genres_str}
+**出演:** {safe_actresses_str}
+**ジャンル:** {safe_genres_str}
 **メーカー:** {maker if maker else "不明"}
 
 <div className="affiliate-link-inline">

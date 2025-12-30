@@ -4,86 +4,131 @@
 
 @layer base {
   body {
-    @apply bg-neutral-950 text-neutral-200;
+    @apply bg-elegant-bg text-elegant-text;
     font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'メイリオ', sans-serif;
+    line-height: 1.9;
+    letter-spacing: 0.02em;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Noto Serif JP', 'Yu Mincho', 'YuMincho', 'Hiragino Mincho ProN', serif;
+    font-weight: 600;
+    letter-spacing: 0.05em;
   }
 }
 
 @layer components {
   .prose {
-    @apply text-neutral-200;
-    line-height: 1.8;
+    @apply text-elegant-text;
+    line-height: 1.9;
+    font-size: 17px;
   }
   
   .prose h1 {
-    @apply text-3xl font-bold text-neutral-100 mb-4 mt-6;
+    @apply text-4xl font-serif-jp text-elegant-wine mb-6 mt-8;
+    letter-spacing: 0.08em;
   }
   
   .prose h2 {
-    @apply text-2xl font-bold text-yellow-500 mb-4 mt-8 pb-2;
-    border-bottom: 2px solid #3f3f46;
+    @apply text-3xl font-serif-jp text-elegant-wine mb-6 mt-12 pb-3;
+    border-bottom: 2px solid #D4AF37;
+    letter-spacing: 0.08em;
   }
   
-  /* h2タグの直後の画像の余白を減らす（広告が間にない場合） */
+  /* h2タグの直後の画像の余白を調整 */
   .prose h2 + img,
   .prose h2 + a > img {
-    @apply mt-0;
-  }
-  
-  /* 広告の後に画像が来る場合は通常の余白を維持 */
-  .prose h2 + div[class*="my-8"] + img,
-  .prose h2 + div[class*="my-8"] + a > img {
-    @apply mt-4;
+    @apply mt-6;
   }
   
   .prose h3 {
-    @apply text-xl font-semibold text-yellow-500 mb-3 mt-6;
+    @apply text-2xl font-serif-jp text-elegant-wine mb-4 mt-8;
+    letter-spacing: 0.06em;
+  }
+  
+  .prose h4 {
+    @apply text-xl font-serif-jp text-elegant-wine mb-3 mt-6;
   }
   
   .prose p {
-    @apply mb-4 leading-relaxed;
+    @apply mb-6 leading-loose-plus;
+    text-align: justify;
   }
   
   .prose a {
-    @apply text-yellow-500 underline decoration-yellow-500/50 hover:decoration-yellow-500 transition-colors;
+    @apply text-elegant-wine underline decoration-elegant-wine/50 hover:decoration-elegant-wine transition-all duration-300;
   }
   
   .prose ul, .prose ol {
-    @apply mb-4 ml-6;
+    @apply mb-6 ml-8;
   }
   
   .prose li {
-    @apply mb-2;
+    @apply mb-3;
   }
   
   .prose strong {
-    @apply text-yellow-500 font-bold;
+    @apply text-elegant-wine font-semibold;
   }
   
   .prose img {
-    @apply rounded-lg my-4;
+    @apply rounded-lg my-8 shadow-lg;
+    border: 1px solid #3A3A3A;
   }
   
-  /* アフィリエイトリンク */
+  .prose blockquote {
+    @apply border-l-4 border-elegant-gold pl-6 py-4 my-8 italic;
+    background: linear-gradient(90deg, rgba(212, 175, 55, 0.1) 0%, transparent 100%);
+  }
+  
+  /* アフィリエイトリンク - ダークテーマラグジュアリーデザイン */
   .prose .affiliate-link {
-    @apply my-6 p-5 rounded-lg block;
-    background: linear-gradient(135deg, #1f1f1f 0%, #2a2a2a 100%);
-    border: 2px solid #eab308;
-    @apply shadow-lg hover:shadow-xl transition-shadow;
+    @apply my-10 p-6 rounded-xl block;
+    background: linear-gradient(135deg, #252525 0%, #2F2F2F 100%);
+    border: 2px solid #D4AF37;
+    box-shadow: 0 4px 16px rgba(212, 175, 55, 0.2);
+    transition: all 0.4s ease;
+  }
+  
+  .prose .affiliate-link:hover {
+    box-shadow: 0 6px 24px rgba(212, 175, 55, 0.3);
+    transform: translateY(-2px);
+    border-color: #F0E68C;
   }
   
   .prose .affiliate-link a {
-    @apply text-yellow-500 font-bold text-lg hover:text-yellow-400 transition-colors block text-center;
+    @apply text-elegant-gold font-serif-jp font-semibold text-xl block text-center;
     @apply no-underline;
+    letter-spacing: 0.1em;
+    transition: color 0.3s ease;
+  }
+  
+  .prose .affiliate-link a:hover {
+    @apply text-elegant-champagne;
   }
   
   .prose .affiliate-link-inline {
-    @apply my-4 inline-block;
+    @apply my-6 inline-block;
   }
   
   .prose .affiliate-link-inline a {
-    @apply text-yellow-500 font-semibold hover:text-yellow-400 transition-colors;
-    @apply underline hover:no-underline;
+    @apply text-elegant-wine font-semibold;
+    @apply underline decoration-elegant-wine/50 hover:decoration-elegant-wine;
+    transition: all 0.3s ease;
+  }
+  
+  /* 記事カード - ダークテーマ */
+  .article-card {
+    @apply bg-elegant-bg-light rounded-xl overflow-hidden;
+    border: 1px solid #3A3A3A;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.4s ease;
+  }
+  
+  .article-card:hover {
+    box-shadow: 0 6px 20px rgba(201, 122, 154, 0.2);
+    transform: translateY(-4px);
+    border-color: #8B2252;
   }
 }
 

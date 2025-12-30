@@ -2,15 +2,9 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { getPostBySlug, getAllPostSlugs, getAllPosts } from '@/lib/posts'
-import ArticleRadarChart from '@/components/RadarChart'
-import SubscriptionPromoCard from '@/components/SubscriptionPromoCard'
-import DmmAdBanner from '@/components/DmmAdBanner'
-import DmmAdWidget from '@/components/DmmAdWidget'
-import DmmCampaignBanner from '@/components/DmmCampaignBanner'
-import ArticleContentWithAds from '@/components/ArticleContentWithAds'
-import VitalityPromoSection from '@/components/VitalityPromoSection'
-import TengaEggPromoSection from '@/components/TengaEggPromoSection'
 import RelatedPosts from '@/components/RelatedPosts'
+import FanzaSubscriptionPromo from '@/components/FanzaSubscriptionPromo'
+import ArticleContentWithPromo from '@/components/ArticleContentWithPromo'
 // PlayCircleアイコンをSVGで実装（React 19互換性のため）
 const PlayCircle = ({ className }: { className?: string }) => (
   <svg
@@ -52,7 +46,7 @@ export async function generateMetadata({
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com' // 環境変数で設定
   const url = `${siteUrl}/posts/${slug}`
-  const description = post.excerpt || `${post.title}の熱いレビュー。平成時代の名作を再評価する。`
+  const description = post.excerpt || `${post.title}のレビュー。大人の女性の色気とストーリー性を、官能小説のような筆致で綴ります。`
 
   return {
     title: post.title,
@@ -62,7 +56,7 @@ export async function generateMetadata({
       title: post.title,
       description,
       url,
-      siteName: '過去作・旧作大好きブログ',
+      siteName: '艶めく物語',
       images: post.image ? [
         {
           url: post.image,
@@ -155,11 +149,11 @@ export default async function PostPage({
     dateModified: post.date,
     author: {
       '@type': 'Person',
-      name: '過去作・旧作大好きブログ',
+      name: '艶めく物語',
     },
     publisher: {
       '@type': 'Organization',
-      name: '過去作・旧作大好きブログ',
+      name: '艶めく物語',
       logo: {
         '@type': 'ImageObject',
         url: `${siteUrl}/logo.png`, // ロゴがある場合
@@ -179,140 +173,133 @@ export default async function PostPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <div className="min-h-screen bg-neutral-950 text-neutral-200">
+      <div className="min-h-screen bg-elegant-bg">
       {/* ヘッダー */}
-      <header className="border-b border-neutral-800 bg-neutral-900/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+      <header className="border-b-2 border-elegant-gold/30 bg-elegant-bg-light sticky top-0 z-50 shadow-lg">
+        <div className="max-w-5xl mx-auto px-6 py-4">
           <Link 
             href="/"
-            className="inline-flex items-center gap-2 text-neutral-400 hover:text-yellow-500 transition-colors text-sm"
+            className="inline-flex items-center gap-2 text-elegant-text-light hover:text-elegant-wine transition-colors text-sm font-medium"
           >
             <span>←</span>
-            <span>アーカイブに戻る</span>
+            <span>記事一覧に戻る</span>
           </Link>
         </div>
       </header>
 
-      <div className="flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-5xl mx-auto px-6 py-12">
         {/* メインコンテンツ */}
-        <main className="flex-1 min-w-0 max-w-5xl">
+        <main className="max-w-4xl mx-auto">
         {/* 記事ヘッダー */}
-        <div className="mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-neutral-100 mb-4">
+        <div className="mb-12">
+          <h1 className="text-4xl md:text-5xl font-serif-jp text-elegant-wine mb-6 leading-relaxed tracking-wider">
             {post.title}
           </h1>
           
-          <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-400 mb-6">
-            {post.tags && post.tags.map((tag: string) => (
+          {/* ジャンルタグ */}
+          {post.genre && post.genre.length > 0 && (
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              {post.genre.map((g: string) => (
+                <span
+                  key={g}
+                  className="px-4 py-1.5 bg-elegant-wine text-white text-sm font-medium rounded-full"
+                >
+                  {g}
+                </span>
+              ))}
+            </div>
+          )}
+          
+          {/* 評価スコア */}
+          {(post.storyScore || post.actingScore || post.atmosphereScore) && (
+            <div className="flex gap-6 mb-4 text-sm text-elegant-text-light">
+              {post.storyScore && (
+                <div className="flex items-center gap-1">
+                  <span className="font-medium">物語</span>
+                  <span className="text-elegant-wine font-bold">{post.storyScore}</span>
+                </div>
+              )}
+              {post.actingScore && (
+                <div className="flex items-center gap-1">
+                  <span className="font-medium">演技</span>
+                  <span className="text-elegant-wine font-bold">{post.actingScore}</span>
+                </div>
+              )}
+              {post.atmosphereScore && (
+                <div className="flex items-center gap-1">
+                  <span className="font-medium">雰囲気</span>
+                  <span className="text-elegant-wine font-bold">{post.atmosphereScore}</span>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {/* タグ */}
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            {post.tags && post.tags.slice(0, 6).map((tag: string) => (
               <Link
                 key={tag}
                 href={`/?tag=${encodeURIComponent(tag)}`}
-                className="px-3 py-1 bg-neutral-900 rounded-full border border-neutral-800 hover:border-yellow-500 hover:text-yellow-500 transition-colors"
+                className="px-3 py-1 bg-elegant-bg-lighter rounded border border-elegant-border text-elegant-text-light text-xs hover:bg-elegant-wine/20 hover:text-elegant-wine transition-colors"
               >
-                {tag}
+                #{tag}
               </Link>
             ))}
           </div>
 
           {post.date && (
-            <time className="text-neutral-500 text-sm">
-              記事更新日: {post.date}
+            <time className="text-elegant-text-dark text-sm tracking-wider">
+              {new Date(post.date).toLocaleDateString('ja-JP', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
             </time>
           )}
         </div>
 
         {/* メインビジュアル */}
         {post.image && (
-          <div className="mb-8">
+          <div className="mb-12">
             <img
               src={post.image}
               alt={post.title}
-              className="w-full h-auto rounded-lg border border-neutral-800 shadow-2xl"
+              className="w-full h-auto rounded-lg border border-elegant-border shadow-lg"
             />
           </div>
         )}
 
-        {/* FANZA TVリンク - 位置1 */}
-        <div className="my-6 text-center">
-          <a
-            href="https://al.fanza.co.jp/?lurl=https%3A%2F%2Fpremium.dmm.co.jp%2Fbenefit%2F&af_id=toshichan-002&ch=link_tool&ch_id=text"
-            rel="sponsored"
-            target="_blank"
-            className="inline-block px-6 py-3 bg-yellow-600 hover:bg-yellow-500 text-neutral-950 font-bold rounded-lg transition-colors shadow-lg hover:shadow-xl"
-          >
-            FANZA TV
-          </a>
-        </div>
-
-        {/* レーダーチャート */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-neutral-100">評価チャート</h2>
-            <div className="flex items-center gap-2">
-              <span className="text-yellow-500 text-3xl font-bold">★{averageRating}</span>
-            </div>
-          </div>
-          <ArticleRadarChart data={ratings} />
-        </div>
-
-        {/* サブスク誘導カード */}
-        <SubscriptionPromoCard 
-          singleAffiliateUrl={post.affiliateLink}
-          affiliateUrl="https://al.fanza.co.jp/?lurl=https%3A%2F%2Fpremium.dmm.co.jp%2Fbenefit%2F&af_id=toshichan-002&ch=link_tool&ch_id=text"
-        />
-
-        {/* メインアクション (CTA) */}
+        {/* メインアクション (CTA) - ラグジュアリーデザイン */}
         {post.affiliateLink && (
           <div className="mb-12">
             <a
               href={post.affiliateLink}
               target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-3 w-full bg-transparent border-2 border-yellow-600 text-yellow-500 hover:bg-yellow-600/10 font-bold text-lg py-4 px-6 rounded-lg transition-all"
+              rel="noopener noreferrer sponsored"
+              className="flex items-center justify-center gap-3 w-full bg-gradient-to-r from-elegant-wine to-elegant-wine-dark text-white hover:from-elegant-wine-dark hover:to-elegant-wine font-serif-jp font-semibold text-lg py-5 px-8 rounded-xl transition-all shadow-lg hover:shadow-xl hover:scale-[1.02]"
             >
               <PlayCircle className="w-6 h-6" />
-              <span>無料でサンプル動画を再生 (FANZA)</span>
+              <span>作品を鑑賞する</span>
             </a>
           </div>
         )}
 
-        {/* 広告ウィジェット - 位置2 */}
-        <div className="my-8 flex justify-center gap-4 w-full flex-wrap">
-          <DmmAdBanner 
-            affiliateId="toshichan-002"
-            bannerId="1760_300_250"
-          />
-          <DmmAdWidget 
-            dataId="66426b1e79607f67541f15ec05ea7c8c"
-          />
-        </div>
-
         {/* 本文エリア */}
-        <article className="prose prose-invert prose-lg max-w-none mb-20">
-          <ArticleContentWithAds htmlContent={post.content || ''} />
+        <article className="prose max-w-none mb-20">
+          <ArticleContentWithPromo 
+            content={post.content || ''}
+            affiliateLink={post.affiliateLink}
+            contentId={post.contentId}
+          />
         </article>
 
-        {/* FANZA TVサブスク誘導カード（結びの言葉のすぐ下） */}
-        <SubscriptionPromoCard 
+        {/* FANZA TV / 単品購入の誘導ボックス */}
+        <FanzaSubscriptionPromo 
           singleAffiliateUrl={post.affiliateLink}
-          affiliateUrl="https://al.fanza.co.jp/?lurl=https%3A%2F%2Fpremium.dmm.co.jp%2Fbenefit%2F&af_id=toshichan-002&ch=link_tool&ch_id=text"
+          contentId={post.contentId}
         />
 
-        {/* 広告ウィジェット - 位置4 */}
-        <div className="my-8 flex justify-center gap-4 w-full flex-wrap">
-          <DmmAdWidget 
-            dataId="f8bfa16b6ea380c9d074a49090eed3b0"
-          />
-          <DmmAdWidget 
-            dataId="2e1bcfda38effdd988921925f0c34cbb"
-          />
-        </div>
 
-        {/* サプリLPセクション */}
-        <VitalityPromoSection />
-
-        {/* オナホールLPセクション */}
-        <TengaEggPromoSection />
 
         {/* 関連記事 */}
         <RelatedPosts 
@@ -325,7 +312,7 @@ export default async function PostPage({
         <div className="mt-16 mb-8 text-center">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-yellow-600 hover:bg-yellow-500 text-neutral-950 font-bold rounded-lg transition-all shadow-lg hover:shadow-xl hover:scale-105"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-elegant-gold hover:bg-elegant-champagne text-elegant-bg font-serif-jp font-semibold rounded-xl transition-all shadow-md hover:shadow-lg hover:scale-105"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -340,44 +327,24 @@ export default async function PostPage({
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
               <polyline points="9 22 9 12 15 12 15 22" />
             </svg>
-            <span>TOPページに戻る</span>
+            <span>記事一覧に戻る</span>
           </Link>
         </div>
         </main>
 
-        {/* サイドバー - 位置5（追従広告） */}
-        <aside className="lg:w-72 flex-shrink-0">
-          <div className="lg:sticky lg:top-24 space-y-6">
-            <DmmAdWidget 
-              dataId="3fcb9ba032b420a33838c623ce5fae4c"
-              style={{ minHeight: '250px' }}
-            />
-            {/* キャンペーンバナー */}
-            <DmmCampaignBanner 
-              affiliateId="toshichan-002"
-              bannerId="1760_300_250"
-            />
-            {/* サイドキャンペーン2 */}
-            <DmmAdBanner 
-              affiliateId="toshichan-002"
-              bannerId="1298_300_250"
-              style={{ minHeight: '250px' }}
-            />
-          </div>
-        </aside>
       </div>
 
       {/* スティッキーフッター (Mobile) */}
       {post.affiliateLink && (
-        <div className="fixed bottom-0 left-0 right-0 bg-neutral-900 border-t border-neutral-800 p-4 z-50 lg:hidden">
+        <div className="fixed bottom-0 left-0 right-0 bg-elegant-bg-light border-t-2 border-elegant-gold/30 p-4 z-50 lg:hidden shadow-lg">
           <a
             href={post.affiliateLink}
             target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full bg-yellow-600 hover:bg-yellow-500 text-neutral-950 font-bold py-3 px-4 rounded-lg transition-colors"
+            rel="noopener noreferrer sponsored"
+            className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-elegant-wine to-elegant-wine-dark text-white font-serif-jp font-semibold py-3 px-4 rounded-xl transition-all shadow-md hover:shadow-lg"
           >
             <PlayCircle className="w-5 h-5" />
-            <span>サンプルを見る</span>
+            <span>作品を鑑賞する</span>
           </a>
         </div>
       )}
