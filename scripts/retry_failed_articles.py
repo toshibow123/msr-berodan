@@ -8,6 +8,7 @@ import os
 import json
 import sys
 import time
+import re
 from datetime import datetime, timedelta
 from pathlib import Path
 import google.generativeai as genai
@@ -39,34 +40,156 @@ spec = importlib.util.spec_from_file_location(
 bulk_generate = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(bulk_generate)
 
+def parse_prompt_file(prompt_file: Path) -> dict | None:
+    """プロンプトファイルから作品情報を抽出"""
+    try:
+        with open(prompt_file, "r", encoding="utf-8") as f:
+            content = f.read()
+        
+        # 作品データセクションを抽出
+        data_section_match = re.search(r'# 作品データ\s*\n(.*?)(?=\n#|\n##|$)', content, re.DOTALL)
+        if not data_section_match:
+            return None
+        
+        data_section = data_section_match.group(1)
+        product_info = {}
+        
+        # 各項目を抽出
+        patterns = {
+            "title": r'- 作品名：\s*(.+?)(?=\n|$)',
+            "description": r'- 紹介文：\s*(.+?)(?=\n|$)',
+            "content_id": r'- 作品ID：\s*(.+?)(?=\n|$)',
+            "url": r'- 作品URL：\s*(.+?)(?=\n|$)',
+            "keywords": r'- 作品特徴：\s*(.+?)(?=\n|$)',
+            "actress": r'- 出演：\s*(.+?)(?=\n|$)',
+            "genres": r'- ジャンル：\s*(.+?)(?=\n|$)',
+            "maker": r'- メーカー：\s*(.+?)(?=\n|$)',
+            "series": r'- シリーズ：\s*(.+?)(?=\n|$)',
+            "director": r'- 監督：\s*(.+?)(?=\n|$)',
+            "main_image_url": r'- メイン画像URL：\s*(.+?)(?=\n|$)',
+            "affiliate_url": r'- アフィリエイトリンク：\s*(.+?)(?=\n|$)',
+        }
+        
+        for key, pattern in patterns.items():
+            match = re.search(pattern, data_section)
+            if match:
+                value = match.group(1).strip()
+                if value and value != "（説明なし）" and value != "不明":
+                    if key == "genres":
+                        # ジャンルはカンマ区切りで分割
+                        product_info[key] = [g.strip() for g in value.split("、") if g.strip()]
+                    elif key == "actress":
+                        # 出演者もカンマ区切りで分割
+                        product_info["actress"] = [a.strip() for a in value.split("、") if a.strip()]
+                    else:
+                        product_info[key] = value
+        
+        # 作品特徴からメーカー、シリーズ、監督を抽出
+        if "keywords" in product_info:
+            keywords = product_info["keywords"]
+            maker_match = re.search(r'メーカー:\s*([^、]+)', keywords)
+            if maker_match and "maker" not in product_info:
+                product_info["maker"] = maker_match.group(1).strip()
+            
+            series_match = re.search(r'シリーズ:\s*([^、]+)', keywords)
+            if series_match and "series" not in product_info:
+                product_info["series"] = series_match.group(1).strip()
+            
+            director_match = re.search(r'監督:\s*([^、]+)', keywords)
+            if director_match and "director" not in product_info:
+                product_info["director"] = director_match.group(1).strip()
+        
+        return product_info if product_info else None
+        
+    except Exception as e:
+        print(f"   ⚠️  プロンプトファイルの解析に失敗: {e}", file=sys.stderr)
+        return None
+
+
+def create_article_prompt_from_prompt_file(prompt_file: Path) -> str | None:
+    """プロンプトファイルから直接プロンプトを読み取る"""
+    try:
+        with open(prompt_file, "r", encoding="utf-8") as f:
+            return f.read()
+    except Exception as e:
+        print(f"   ⚠️  プロンプトファイルの読み込みに失敗: {e}", file=sys.stderr)
+        return None
+
+
 def create_article_prompt(product_info: dict) -> str:
     """記事生成用のプロンプトを作成（bulk_generate_mature_drama_articles.pyと同じ）"""
     return bulk_generate.create_article_prompt(product_info)
 
 
-def generate_article(model: genai.GenerativeModel, product_info: dict, max_retries: int = 5) -> str | None:
-    """Gemini APIを使って記事本文を生成（リトライ機能付き、再試行時は多めにリトライ）"""
+def generate_article_from_prompt(model: genai.GenerativeModel, prompt_text: str, max_retries: int = 3) -> str | None:
+    """プロンプトテキストから直接記事を生成"""
+    # セーフティ設定（創作物・小説レビューとして扱うため、ブロックを緩和）
+    safety_settings = {
+        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_ONLY_HIGH,  # 高レベルのみブロック
+        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+    }
+    
+    generation_config = {
+        "temperature": 0.9,  # 創造性を高める
+        "top_p": 0.95,
+        "top_k": 40,
+    }
+    
+    for attempt in range(max_retries):
+        try:
+            response = model.generate_content(
+                prompt_text,
+                safety_settings=safety_settings,
+                generation_config=generation_config
+            )
+            
+            if not response.candidates:
+                if response.prompt_feedback and response.prompt_feedback.block_reason:
+                    print(f"   ❌ ブロックされました: {response.prompt_feedback.block_reason}", file=sys.stderr)
+                    return None
+                return None
+            
+            return response.text
+            
+        except Exception as e:
+            error_str = str(e)
+            
+            # クォータエラー（429）の場合 - リトライしても意味がないので即座に失敗
+            if "429" in error_str or "quota" in error_str.lower() or "Quota exceeded" in error_str:
+                print(f"   ❌ クォータ制限に達しました。リトライを中止します（トークン節約のため）", file=sys.stderr)
+                return None
+            # ブロック系のエラーもリトライ不要
+            elif "block" in error_str.lower() or "safety" in error_str.lower():
+                print(f"   ❌ コンテンツがブロックされました。リトライを中止します", file=sys.stderr)
+                return None
+            else:
+                # その他の一時的なエラーのみリトライ（ネットワークエラーなど）
+                print(f"   ❌ 記事生成失敗: {e}", file=sys.stderr)
+                if attempt < max_retries - 1:
+                    # 試行回数に応じた待機時間（1回目: 15秒、2回目: 45秒、3回目: 75秒）
+                    wait_times = [15, 45, 75]
+                    wait_time = wait_times[attempt] if attempt < len(wait_times) else 75
+                    print(f"   ⏳ {wait_time}秒待機してリトライします... (試行 {attempt + 1}/{max_retries})")
+                    time.sleep(wait_time)
+                    continue
+                return None
+    
+    return None
+
+
+def generate_article(model: genai.GenerativeModel, product_info: dict, max_retries: int = 3) -> str | None:
+    """Gemini APIを使って記事本文を生成（リトライ機能付き、3回試行で最後は長めに待機）"""
     prompt = create_article_prompt(product_info)
     
     # セーフティ設定（創作物・小説レビューとして扱うため、ブロックを緩和）
-    safety_settings = [
-        {
-            "category": HarmCategory.HARM_CATEGORY_HARASSMENT,
-            "threshold": HarmBlockThreshold.BLOCK_NONE,
-        },
-        {
-            "category": HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-            "threshold": HarmBlockThreshold.BLOCK_NONE,
-        },
-        {
-            "category": HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-            "threshold": HarmBlockThreshold.BLOCK_ONLY_HIGH,  # 高レベルのみブロック
-        },
-        {
-            "category": HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-            "threshold": HarmBlockThreshold.BLOCK_NONE,
-        },
-    ]
+    safety_settings = {
+        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_ONLY_HIGH,  # 高レベルのみブロック
+        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+    }
     
     generation_config = {
         "temperature": 0.9,  # 創造性を高める
@@ -85,11 +208,8 @@ def generate_article(model: genai.GenerativeModel, product_info: dict, max_retri
             if not response.candidates:
                 if response.prompt_feedback and response.prompt_feedback.block_reason:
                     print(f"   ❌ ブロックされました: {response.prompt_feedback.block_reason}", file=sys.stderr)
-                    # ブロックされた場合、プロンプトをさらに婉曲的に修正してリトライ
-                    if attempt < max_retries - 1:
-                        print(f"   ⚠️  より婉曲的な表現でリトライします... (試行 {attempt + 1}/{max_retries})")
-                        time.sleep(10 * (attempt + 1))  # 試行回数に応じて待機時間を増やす
-                        continue
+                    # ブロックエラーはリトライしても意味がないので即座に失敗
+                    return None
                 return None
             
             return response.text
@@ -97,27 +217,21 @@ def generate_article(model: genai.GenerativeModel, product_info: dict, max_retri
         except Exception as e:
             error_str = str(e)
             
-            # クォータエラーの場合
+            # クォータエラー（429）の場合 - リトライしても意味がないので即座に失敗
             if "429" in error_str or "quota" in error_str.lower() or "Quota exceeded" in error_str:
-                if attempt < max_retries - 1:
-                    wait_time = 120  # 再試行時は長めに待機
-                    if "retry in" in error_str.lower():
-                        import re
-                        match = re.search(r'retry in ([\d.]+)s', error_str, re.IGNORECASE)
-                        if match:
-                            wait_time = int(float(match.group(1))) + 30  # 余裕を持たせる
-                    
-                    print(f"   ⚠️  クォータ制限に達しました。{wait_time}秒待機してリトライします... (試行 {attempt + 1}/{max_retries})")
-                    time.sleep(wait_time)
-                    continue
-                else:
-                    print(f"   ❌ クォータ制限のため生成をスキップしました", file=sys.stderr)
-                    return None
+                print(f"   ❌ クォータ制限に達しました。リトライを中止します（トークン節約のため）", file=sys.stderr)
+                return None
+            # ブロック系のエラーもリトライ不要
+            elif "block" in error_str.lower() or "safety" in error_str.lower():
+                print(f"   ❌ コンテンツがブロックされました。リトライを中止します", file=sys.stderr)
+                return None
             else:
-                # その他のエラー
+                # その他の一時的なエラーのみリトライ（ネットワークエラーなど）
                 print(f"   ❌ 記事生成失敗: {e}", file=sys.stderr)
                 if attempt < max_retries - 1:
-                    wait_time = 15 * (attempt + 1)  # 指数バックオフ
+                    # 試行回数に応じた待機時間（1回目: 15秒、2回目: 45秒、3回目: 75秒）
+                    wait_times = [15, 45, 75]
+                    wait_time = wait_times[attempt] if attempt < len(wait_times) else 75
                     print(f"   ⏳ {wait_time}秒待機してリトライします... (試行 {attempt + 1}/{max_retries})")
                     time.sleep(wait_time)
                     continue
@@ -190,6 +304,9 @@ def main():
     fail_count = 0
     still_failed = []
     
+    # プロンプトディレクトリを設定
+    prompts_dir = project_root / "prompts"
+    
     for idx, item in enumerate(failed_items, 1):
         content_id = item.get("content_id", "")
         title = item.get("title", "不明")
@@ -207,9 +324,51 @@ def main():
         
         print(f"   ジャンル: {', '.join(matched_genres)}")
         
-        # 記事生成
-        print(f"   ✍️  再生成中...")
-        article_content = generate_article(model, work, max_retries=5)
+        # プロンプトファイルを探す
+        prompt_file = None
+        # 日付パターンで検索（YYYY-MM-DD-{content_id}-prompt.txt）
+        date_patterns = [
+            publish_date.replace("-", "-"),  # 公開日
+            datetime.now().strftime("%Y-%m-%d"),  # 今日の日付
+        ]
+        
+        for date_pattern in date_patterns:
+            potential_file = prompts_dir / f"{date_pattern}-{content_id}-prompt.txt"
+            if potential_file.exists():
+                prompt_file = potential_file
+                break
+        
+        # 日付なしで検索
+        if not prompt_file:
+            for file in prompts_dir.glob(f"*-{content_id}-prompt.txt"):
+                prompt_file = file
+                break
+        
+        article_content = None
+        
+        if prompt_file and prompt_file.exists():
+            print(f"   📄 プロンプトファイルが見つかりました: {prompt_file.name}")
+            # プロンプトファイルから直接プロンプトを読み取る
+            prompt_text = create_article_prompt_from_prompt_file(prompt_file)
+            
+            if prompt_text:
+                # プロンプトファイルから直接記事を生成（プロンプトファイルの内容をそのまま使用）
+                print(f"   ✍️  プロンプトファイルの内容をそのまま使用して記事生成中...")
+                article_content = generate_article_from_prompt(model, prompt_text, max_retries=3)
+            else:
+                print(f"   ⚠️  プロンプトファイルの読み込みに失敗しました")
+                # プロンプトファイルから作品情報を抽出
+                product_info = parse_prompt_file(prompt_file)
+                if product_info:
+                    print(f"   ✍️  抽出した情報から記事生成中...")
+                    article_content = generate_article(model, product_info, max_retries=3)
+        else:
+            print(f"   ℹ️  プロンプトファイルが見つかりませんでした（{content_id}）")
+        
+        # プロンプトファイルがない場合は、work情報から生成
+        if not article_content:
+            print(f"   ✍️  保存された情報から記事生成中...")
+            article_content = generate_article(model, work, max_retries=3)
         
         if article_content:
             # 保存

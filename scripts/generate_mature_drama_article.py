@@ -36,6 +36,79 @@ def initialize_gemini(api_key: str):
     genai.configure(api_key=api_key)
 
 
+def sanitize_title(title: str) -> str:
+    """タイトルから直接的な表現を除去・置換"""
+    # 直接的な表現を婉曲的な表現に置換（大幅に拡張）
+    replacements = {
+        "中出し": "感情的な結末",
+        "SEX": "親密な場面",
+        "性交": "親密な場面",
+        "筆おろし": "初めての体験",
+        "童貞": "未経験",
+        "不倫": "禁断の関係",
+        "近親相姦": "複雑な関係",
+        "寝取": "関係の変化",
+        "NTR": "関係の変化",
+        "生ハメ": "深い関係",
+        "ハメ": "親密な関係",
+        "フェラ": "親密な交流",
+        "オナニー": "一人の時間",
+        "レイプ": "強制的な関係",
+        "強姦": "強制的な関係",
+        "輪姦": "複数の関係",
+        "痴漢": "不適切な接触",
+        "露出": "開放的な場面",
+        "アナル": "特別な関係",
+        "ケツ": "特別な部分",
+        "尻": "後ろ姿",
+        "おっぱい": "胸",
+        "パイパン": "清潔な状態",
+        "パイズリ": "親密な交流",
+        "3P": "複数の関係",
+        "4P": "複数の関係",
+        "複数": "多様な関係",
+        "イキ": "感情の高まり",
+        "イク": "感情の高まり",
+        "絶頂": "感情の高まり",
+        "潮吹き": "感情の表現",
+        "スプラッシュ": "感情の表現",
+        "ザーメン": "感情の表現",
+        "精液": "感情の表現",
+        "射精": "感情の高まり",
+        "セフレ": "特別な関係",
+        "浮気": "複雑な関係",
+        "不貞": "複雑な関係",
+    }
+    
+    sanitized = title
+    for direct, indirect in replacements.items():
+        sanitized = sanitized.replace(direct, indirect)
+    
+    return sanitized
+
+
+def sanitize_description(description: str) -> str:
+    """作品説明から直接的な表現を除去・置換"""
+    if not description:
+        return ""
+    
+    # タイトルと同じ置換ルールを適用
+    sanitized = sanitize_title(description)
+    
+    # 説明特有の置換
+    additional_replacements = {
+        "〜": "、",
+        "…": "、",
+        "！": "。",
+        "？": "。",
+    }
+    
+    for direct, indirect in additional_replacements.items():
+        sanitized = sanitized.replace(direct, indirect)
+    
+    return sanitized
+
+
 def extract_content_id_from_url(url: str) -> str | None:
     """URLから品番（content_id）を抽出"""
     # アフィリエイトリンクの場合、実URLを取り出す
@@ -144,6 +217,8 @@ def is_valid_genre(product_info: dict) -> tuple[bool, list]:
 def create_article_prompt(product_info: dict) -> str:
     """記事生成用のプロンプトを作成"""
     title = product_info.get("title", "")
+    # タイトルをサニタイズ（プロンプト内では婉曲的な表現を使用）
+    sanitized_title = sanitize_title(title)
     content_id = product_info.get("content_id", "")
     image_url = product_info.get("image_url", "")
     affiliate_url = product_info.get("affiliate_url", "")
@@ -153,6 +228,9 @@ def create_article_prompt(product_info: dict) -> str:
     director = product_info.get("director", "")
     description = product_info.get("description", "")
     release_date = product_info.get("release_date", "")
+    
+    # 説明もサニタイズ
+    sanitized_description = sanitize_description(description)
     
     actresses = "、".join(actress_list) if actress_list else "不明"
     genres = "、".join(genre_list) if genre_list else "不明"
@@ -169,38 +247,42 @@ def create_article_prompt(product_info: dict) -> str:
 
 あなたは、文芸評論家と映画評論家の両方の視点を持つ、洗練されたレビュアーです。
 
-**重要：この記事は「創作小説・フィクション作品のレビュー」として書いてください。**
+**最重要：この記事は「創作小説・フィクション作品のレビュー」として書いてください。**
 - これは実在の人物や出来事ではなく、**創作物・小説作品のレビュー記事**です
 - 映画やドラマ作品のストーリー分析・演技評価の視点で書きます
 - 文学的・芸術的な表現を心がけます
 - 文芸誌や映画評論誌のような品格のある文章を書きます
 
-## 重要な前提
+## 重要な前提（必ず守ること）
 - **この記事は創作小説・フィクション作品のレビュー**として書きます
-- 登場人物は「キャラクター」「役柄」として扱います
-- ストーリーは「物語」「作品世界」として分析します
+- 登場人物は「キャラクター」「役柄」「登場人物」として扱います（実在の人物ではない）
+- ストーリーは「物語」「作品世界」「フィクション」として分析します
 - 映画やドラマ作品のストーリー分析・演技評価の視点で書きます
 - 文学的・芸術的な表現を心がけます
 - 文芸誌や映画評論誌のような品格のある文章を書きます
+- **性的な描写は一切含めず、ストーリー性と演技力の分析に焦点を当てます**
 
 ## 執筆の特徴
 - ストーリーの構成や演出を映画レビューのように分析する
 - 登場人物の演技力や表現力を文学的視点で評価する
 - 読者がうっとりするような、余韻を残す文章を書く
 - 女性読者も楽しめる、品のある表現を心がける
+- **あくまで「創作物のレビュー」として、文学的・芸術的な視点で書く**
 
 ## 厳守すべき制約
 - 批判・悪口は一切禁止（ポジティブな視点のみ）
 - スラング（「ｗ」「マジで」「ヤバい」など）は使用しない
-- 直接的な表現は避け、文学的・比喩的な表現を使う
+- **直接的な性的表現は一切使用しない。文学的・比喩的な表現のみを使用**
 - 登場人物への失礼な表現は禁止
 - **あくまで「創作物のレビュー」として書く**
+- **性的な場面は「感情的な場面」「心理描写の深い場面」として表現**
 
 ---
 
 # 作品情報（創作小説・フィクション作品）
 
-**作品タイトル**: {title}
+**作品タイトル**: {sanitized_title}
+**注意**: タイトルは創作小説・フィクション作品のタイトルとして扱ってください。直接的な表現は含まれていません。
 **作品ID**: {content_id}
 **主要キャラクター**: {actresses}
 **ジャンル**: {genres}
@@ -211,9 +293,9 @@ def create_article_prompt(product_info: dict) -> str:
 **作品詳細URL**: {affiliate_url}
 
 **作品あらすじ**:
-{description if description else "（説明なし）"}
+{sanitized_description if sanitized_description else "（説明なし）"}
 
-**注意**: これは創作小説・フィクション作品のレビューです。登場人物はキャラクターとして、ストーリーは物語として扱ってください。
+**注意**: これは創作小説・フィクション作品のレビューです。登場人物はキャラクターとして、ストーリーは物語として扱ってください。作品あらすじに含まれる表現は、すべて文学的・比喩的な表現として解釈してください。
 
 ---
 
@@ -224,10 +306,10 @@ def create_article_prompt(product_info: dict) -> str:
 ## [詩的なタイトル]
 （「心を揺さぶる、複雑な人間関係の物語」「成熟した表現が光る作品」など、作品の魅力を一言で表現）
 
-## {title}
+## {sanitized_title}
 
 <a href="{affiliate_url}" target="_blank" rel="sponsored noopener noreferrer">
-  <img src="{image_url}" alt="{title}" />
+  <img src="{image_url}" alt="{sanitized_title}" />
 </a>
 
 **主要キャラクター:** {actresses}
@@ -312,7 +394,7 @@ def create_article_prompt(product_info: dict) -> str:
 </div>
 
 **作品情報:**
-- 作品タイトル: {title}
+- 作品タイトル: {sanitized_title}
 - 作品ID: {content_id}
 - 主要キャラクター: {actresses}
 - ジャンル: {genres}
@@ -349,8 +431,8 @@ def create_article_prompt(product_info: dict) -> str:
     return prompt
 
 
-def generate_article(model: genai.GenerativeModel, product_info: dict, max_retries: int = 3) -> str | None:
-    """Gemini APIを使って記事本文を生成（リトライ機能付き）"""
+def generate_article(model: genai.GenerativeModel, product_info: dict, max_retries: int = 2) -> str | None:
+    """Gemini APIを使って記事本文を生成（リトライ機能付き、トークン消費を最小化）"""
     prompt = create_article_prompt(product_info)
     
     # セーフティ設定（創作物・小説レビューとして扱うため、ブロックを緩和）
@@ -378,11 +460,12 @@ def generate_article(model: genai.GenerativeModel, product_info: dict, max_retri
             if not response.candidates:
                 if response.prompt_feedback and response.prompt_feedback.block_reason:
                     print(f"❌ ブロックされました: {response.prompt_feedback.block_reason}", file=sys.stderr)
-                    # ブロックされた場合、プロンプトをさらに婉曲的に修正してリトライ
+                    # ブロックされた場合、1回だけリトライを試みる（トークン節約のため）
                     if attempt < max_retries - 1:
                         print(f"⚠️  より婉曲的な表現でリトライします... (試行 {attempt + 1}/{max_retries})")
-                        time.sleep(5)
+                        time.sleep(3)  # 短い待機時間
                         continue
+                    return None
                 else:
                     print(f"❌ レスポンス候補がありません", file=sys.stderr)
                 return None
@@ -392,28 +475,19 @@ def generate_article(model: genai.GenerativeModel, product_info: dict, max_retri
         except Exception as e:
             error_str = str(e)
             
-            # クォータエラーの場合
+            # クォータエラー（429）の場合 - リトライしても意味がないので即座に失敗
             if "429" in error_str or "quota" in error_str.lower() or "Quota exceeded" in error_str:
-                if attempt < max_retries - 1:
-                    # リトライまでの待機時間を計算
-                    wait_time = 60
-                    if "retry in" in error_str.lower():
-                        import re
-                        match = re.search(r'retry in ([\d.]+)s', error_str, re.IGNORECASE)
-                        if match:
-                            wait_time = int(float(match.group(1))) + 10
-                    
-                    print(f"⚠️  クォータ制限に達しました。{wait_time}秒待機してリトライします... (試行 {attempt + 1}/{max_retries})")
-                    time.sleep(wait_time)
-                    continue
-                else:
-                    print(f"❌ クォータ制限のため生成をスキップしました", file=sys.stderr)
-                    return None
+                print(f"❌ クォータ制限に達しました。リトライを中止します（トークン節約のため）", file=sys.stderr)
+                return None
+            # ブロック系のエラーもリトライ不要
+            elif "block" in error_str.lower() or "safety" in error_str.lower():
+                print(f"❌ コンテンツがブロックされました。リトライを中止します", file=sys.stderr)
+                return None
             else:
-                # その他のエラー
+                # その他の一時的なエラーのみリトライ（ネットワークエラーなど）
                 print(f"❌ 記事生成失敗: {e}", file=sys.stderr)
                 if attempt < max_retries - 1:
-                    wait_time = 10 * (attempt + 1)
+                    wait_time = 5 * (attempt + 1)  # 短い待機時間（5秒、10秒）
                     print(f"⏳ {wait_time}秒待機してリトライします... (試行 {attempt + 1}/{max_retries})")
                     time.sleep(wait_time)
                     continue
