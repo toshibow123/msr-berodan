@@ -1,18 +1,5 @@
 import ElegantPostCard from './ElegantPostCard';
-
-interface PostData {
-  slug: string;
-  title: string;
-  date: string;
-  excerpt: string;
-  image: string;
-  tags: string[];
-  genre?: string[];
-  rating?: number;
-  storyScore?: number;
-  actingScore?: number;
-  atmosphereScore?: number;
-}
+import { PostData } from '@/lib/posts';
 
 interface ElegantPostListProps {
   posts: PostData[];
@@ -47,10 +34,10 @@ export default function ElegantPostList({ posts, title, subtitle }: ElegantPostL
               key={post.slug}
               slug={post.slug}
               title={post.title}
-              excerpt={post.excerpt}
-              image={post.image}
+              excerpt={post.excerpt || ''}
+              image={post.image || ''}
               date={post.date}
-              tags={post.tags}
+              tags={post.tags || []}
               genre={post.genre}
               rating={post.rating}
               storyScore={post.storyScore}
