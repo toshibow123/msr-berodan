@@ -39,9 +39,16 @@ export default function ElegantPostCard({
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
           
-          {/* ジャンルタグ（画像上） */}
+          {/* 評価（画像上、左側） */}
+          {rating && (
+            <div className="absolute top-4 left-4 bg-elegant-gold/90 text-elegant-bg px-3 py-1 rounded-full backdrop-blur-sm z-10">
+              <span className="text-sm font-bold">★ {rating}</span>
+            </div>
+          )}
+          
+          {/* ジャンルタグ（画像上、評価の下） */}
           {genre.length > 0 && (
-            <div className="absolute top-4 left-4 flex gap-2">
+            <div className={`absolute ${rating ? 'top-16' : 'top-4'} left-4 flex gap-2 z-10`}>
               {genre.slice(0, 2).map((g) => (
                 <span
                   key={g}
@@ -50,13 +57,6 @@ export default function ElegantPostCard({
                   {g}
                 </span>
               ))}
-            </div>
-          )}
-          
-          {/* 評価（画像上） */}
-          {rating && (
-            <div className="absolute top-4 right-4 bg-elegant-gold/90 text-elegant-bg px-3 py-1 rounded-full backdrop-blur-sm">
-              <span className="text-sm font-bold">★ {rating}</span>
             </div>
           )}
         </div>
