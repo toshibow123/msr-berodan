@@ -16,7 +16,7 @@ export default function EditorialRecommendations({
   const [isVisible, setIsVisible] = useState(false)
   const [shouldStick, setShouldStick] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
-  const footerRef = useRef<HTMLDivElement>(null)
+  const footerRef = useRef<HTMLDivElement | null>(null)
 
   // ジャンル判定
   const getGenreType = (): 'hitozuma' | 'jukujyo' | null => {
@@ -128,8 +128,9 @@ export default function EditorialRecommendations({
     const findFooter = () => {
       // 関連記事セクションを探す
       const relatedSection = document.querySelector('[data-related-posts]')
-      if (relatedSection) {
-        footerRef.current = relatedSection as HTMLDivElement
+      if (relatedSection && footerRef.current === null) {
+        // MutableRefObjectとして扱うため、型アサーションを使用
+        ;(footerRef as React.MutableRefObject<HTMLDivElement | null>).current = relatedSection as HTMLDivElement
       }
     }
 
