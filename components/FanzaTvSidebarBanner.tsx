@@ -12,7 +12,7 @@ export default function FanzaTvSidebarBanner({ affiliateUrl }: FanzaTvSidebarBan
   const [imageError, setImageError] = useState(false)
 
   return (
-    <div className="bg-elegant-bg-light rounded-xl border border-elegant-border overflow-hidden shadow-lg">
+    <div className="bg-elegant-bg-light rounded-xl border-2 border-elegant-wine/40 overflow-hidden shadow-lg">
       {/* PR表示 */}
       <div className="text-center pt-3 pb-2">
         <span className="text-xs text-elegant-text-dark font-medium bg-elegant-bg-lighter px-3 py-1 rounded-full border border-elegant-border">PR・アフィリエイト広告</span>

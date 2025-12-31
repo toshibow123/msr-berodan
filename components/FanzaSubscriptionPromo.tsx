@@ -37,7 +37,7 @@ export default function FanzaSubscriptionPromo({
         <span className="text-xs text-elegant-text-dark font-medium bg-elegant-bg-lighter px-4 py-1.5 rounded-full border border-elegant-border">PR・アフィリエイト広告</span>
       </div>
       
-      <div className="bg-elegant-bg-light rounded-xl border-2 border-elegant-wine/30 overflow-hidden shadow-xl">
+      <div className="bg-elegant-bg-light rounded-xl border-2 border-elegant-wine/50 overflow-hidden shadow-xl">
         {/* ヘッダー */}
         <div className="bg-gradient-to-r from-elegant-wine/40 to-elegant-wine-dark/40 px-6 py-4 border-b-2 border-elegant-wine/30">
           <h3 className="text-xl font-serif-jp font-bold text-elegant-wine text-center">

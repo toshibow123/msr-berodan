@@ -22,7 +22,7 @@ export default function FilteredPostList({ allPosts }: FilteredPostListProps) {
       const categoryMap: Record<string, string[]> = {
         mature: ['熟女', '三十路', '四十路', '五十路'],
         married: ['人妻', '主婦', '奥さん'],
-        drama: ['ドラマ', 'ストーリー', 'NTR', '寝取', '不倫', '近親相姦'],
+        drama: ['ドラマ', 'ストーリー', 'NTR', 'ネトラレ', '寝取', '寝取られ', '不倫', '近親相姦'],
       };
       const keywords = categoryMap[category] || [];
       return genres.some(genre => keywords.some(keyword => genre.includes(keyword)));

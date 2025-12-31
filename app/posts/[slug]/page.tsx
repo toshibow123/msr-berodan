@@ -5,6 +5,9 @@ import { getPostBySlug, getAllPostSlugs, getAllPosts } from '@/lib/posts'
 import RelatedPosts from '@/components/RelatedPosts'
 import FanzaSubscriptionPromo from '@/components/FanzaSubscriptionPromo'
 import ArticleContentWithPromo from '@/components/ArticleContentWithPromo'
+import AffiliateAdMock from '@/components/AffiliateAdMock'
+import EditorialRecommendations from '@/components/EditorialRecommendations'
+import MgstageAd from '@/components/MgstageAd'
 // PlayCircleアイコンをSVGで実装（React 19互換性のため）
 const PlayCircle = ({ className }: { className?: string }) => (
   <svg
@@ -174,8 +177,13 @@ export default async function PostPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <div className="min-h-screen bg-elegant-bg">
+      {/* 広告位置5: 固定追従バナー（モバイル対応・上部固定） */}
+      <div className="lg:hidden">
+        <AffiliateAdMock position="sticky" size="728x90" />
+      </div>
+
       {/* ヘッダー */}
-      <header className="border-b-2 border-elegant-gold/30 bg-elegant-bg-light sticky top-0 z-50 shadow-lg">
+      <header className="border-b-2 border-elegant-gold/30 bg-elegant-bg-light sticky top-[90px] lg:top-0 z-50 shadow-lg">
         <div className="max-w-5xl mx-auto px-6 py-4">
           <Link 
             href="/"
@@ -188,8 +196,9 @@ export default async function PostPage({
       </header>
 
       <div className="max-w-5xl mx-auto px-6 py-12">
-        {/* メインコンテンツ */}
-        <main className="max-w-4xl mx-auto">
+        {/* メインコンテンツとサイドバー */}
+        <div className="flex gap-8 items-start">
+          <main className="flex-1 max-w-4xl">
         {/* 記事ヘッダー */}
         <div className="mb-12">
           <h1 className="text-4xl md:text-5xl font-serif-jp text-elegant-wine mb-6 leading-relaxed tracking-wider">
@@ -258,6 +267,12 @@ export default async function PostPage({
           )}
         </div>
 
+        {/* 広告位置1: 記事上部（タイトル下〜導入文直後） */}
+        <MgstageAd 
+          scriptUrl="https://www.mgstage.com/afscript/prestigebb/728_90/N2G56Q3UYEPYWXP7P8PKPRIDC3/"
+          containerId="mgstage-ad-top"
+        />
+
         {/* メインビジュアル */}
         {post.image && (
           <div className="mb-12">
@@ -268,6 +283,9 @@ export default async function PostPage({
             />
           </div>
         )}
+
+        {/* 広告位置2: メインビジュアルの後 */}
+        <AffiliateAdMock position="top" size="responsive" />
 
         {/* メインアクション (CTA) - ラグジュアリーデザイン */}
         {post.affiliateLink && (
@@ -293,20 +311,29 @@ export default async function PostPage({
           />
         </article>
 
+        {/* 広告位置3: 記事末尾（まとめの直後） */}
+        <MgstageAd 
+          scriptUrl="https://www.mgstage.com/afscript/superch/728_90/N2G56Q3UYEPYWXP7P8PKPRIDC3/"
+          containerId="mgstage-ad-bottom"
+        />
+
         {/* FANZA TV / 単品購入の誘導ボックス */}
         <FanzaSubscriptionPromo 
           singleAffiliateUrl={post.affiliateLink}
           contentId={post.contentId}
         />
 
-
+        {/* 広告位置4: 関連記事の前 */}
+        <AffiliateAdMock position="bottom" size="responsive" />
 
         {/* 関連記事 */}
-        <RelatedPosts 
-          currentSlug={slug}
-          currentTags={post.tags}
-          allPosts={allPosts}
-        />
+        <div data-related-posts>
+          <RelatedPosts 
+            currentSlug={slug}
+            currentTags={post.tags}
+            allPosts={allPosts}
+          />
+        </div>
 
         {/* TOPページに戻るボタン */}
         <div className="mt-16 mb-8 text-center">
@@ -332,6 +359,18 @@ export default async function PostPage({
         </div>
         </main>
 
+        {/* 編集部おすすめ（PCのみ） */}
+        <EditorialRecommendations 
+          currentPost={post}
+          allPosts={allPosts}
+        />
+        </div>
+
+      </div>
+
+      {/* 広告位置5: 固定追従バナー（モバイル対応・上部固定） */}
+      <div className="lg:hidden">
+        <AffiliateAdMock position="sticky" size="728x90" />
       </div>
 
       {/* スティッキーフッター (Mobile) */}

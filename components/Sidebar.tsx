@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { PostData } from '@/lib/posts';
 import FanzaTvSidebarBanner from './FanzaTvSidebarBanner';
+import AffiliateAdMock from './AffiliateAdMock';
 
 interface SidebarProps {
   allPosts: PostData[];
@@ -102,6 +103,9 @@ export default function Sidebar({ allPosts, tags }: SidebarProps) {
     <aside className="w-full lg:w-80 space-y-6 lg:sticky lg:top-24 lg:h-fit">
       {/* FANZA TV広告 */}
       <FanzaTvSidebarBanner affiliateUrl={fanzaTvUrl} />
+
+      {/* 広告位置4: サイドバー広告 */}
+      <AffiliateAdMock position="sidebar" size="300x250" />
 
       {/* 検索バー */}
       <div className="bg-elegant-bg-light rounded-xl p-6 border border-elegant-border">
