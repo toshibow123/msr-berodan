@@ -40,11 +40,11 @@ export default function MgstageAd({ scriptUrl, containerId = 'mgstage-ad-top' }:
 
       console.log('MGStage広告コンテナ確認:', containerId, container)
 
-      // スクリプトを動的に読み込む
+      // スクリプトを動的に読み込む（document.write()を使うため、同期的に読み込む）
       const script = document.createElement('script')
       script.type = 'text/javascript'
       script.src = scriptUrl
-      script.async = true
+      script.async = false // document.write()を使うため、非同期を無効化
 
       script.onload = () => {
         console.log('MGStage広告スクリプト読み込み完了')
@@ -53,16 +53,16 @@ export default function MgstageAd({ scriptUrl, containerId = 'mgstage-ad-top' }:
         
         // 広告が表示されるまで少し待つ
         setTimeout(() => {
-          const adContent = container.querySelector('iframe, img, a, div[class*="mgstage"], div[id*="mgstage"]')
-          if (adContent) {
-            console.log('MGStage広告コンテンツ検出:', adContent)
+          const adContent = container.querySelector('iframe, img, a, div[class*="mgstage"], div[id*="mgstage"], script')
+          if (adContent || container.innerHTML.trim() !== '') {
+            console.log('MGStage広告コンテンツ検出:', adContent || 'コンテナにコンテンツあり')
             setDebugInfo('広告表示中')
           } else {
             console.warn('MGStage広告コンテンツが見つかりません')
             console.log('コンテナの内容:', container.innerHTML)
             setDebugInfo('広告コンテンツ未検出')
           }
-        }, 2000)
+        }, 3000)
       }
 
       script.onerror = (error) => {
@@ -70,9 +70,9 @@ export default function MgstageAd({ scriptUrl, containerId = 'mgstage-ad-top' }:
         setDebugInfo('スクリプト読み込みエラー')
       }
 
-      // bodyに追加
-      document.body.appendChild(script)
-      console.log('MGStageスクリプトをbodyに追加しました')
+      // コンテナの直前にスクリプトを追加（document.write()が正しく動作するように）
+      container.parentNode?.insertBefore(script, container)
+      console.log('MGStageスクリプトをコンテナの前に追加しました')
     }
 
     // 初回実行（少し遅延して実行）
