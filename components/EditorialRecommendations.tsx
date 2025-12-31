@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, MutableRefObject } from 'react'
 import Link from 'next/link'
 import { PostData } from '@/lib/posts'
 
@@ -16,7 +16,7 @@ export default function EditorialRecommendations({
   const [isVisible, setIsVisible] = useState(false)
   const [shouldStick, setShouldStick] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
-  const footerRef = useRef<HTMLDivElement>(null)
+  const footerRef = useRef<HTMLDivElement | null>(null) as MutableRefObject<HTMLDivElement | null>
 
   // ジャンル判定
   const getGenreType = (): 'hitozuma' | 'jukujyo' | null => {
