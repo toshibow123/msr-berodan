@@ -7,6 +7,7 @@ const categories = [
   { id: 'mature', label: '熟女', icon: '🌹' },
   { id: 'married', label: '人妻', icon: '💍' },
   { id: 'drama', label: 'ドラマ', icon: '🎭' },
+  { id: 'ntr', label: 'NTR(ネトラレ)', icon: '💔' },
 ];
 
 export default function CategoryFilter() {

@@ -12,7 +12,7 @@ interface PostFilterProps {
 export default function PostFilter({ initialPosts }: PostFilterProps) {
   const searchParams = useSearchParams();
   const [posts, setPosts] = useState<PostData[]>(initialPosts);
-  const [sortBy, setSortBy] = useState<'date' | 'rating' | 'title'>('date');
+  const [sortBy, setSortBy] = useState<'date' | 'date-oldest' | 'rating' | 'title'>('date');
   const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
@@ -25,6 +25,8 @@ export default function PostFilter({ initialPosts }: PostFilterProps) {
     switch (sortBy) {
       case 'date':
         return new Date(b.date).getTime() - new Date(a.date).getTime();
+      case 'date-oldest':
+        return new Date(a.date).getTime() - new Date(b.date).getTime();
       case 'rating':
         const ratingA = a.rating || 0;
         const ratingB = b.rating || 0;
@@ -47,6 +49,7 @@ export default function PostFilter({ initialPosts }: PostFilterProps) {
       mature: '熟女',
       married: '人妻',
       drama: 'ドラマ',
+      ntr: 'NTR(ネトラレ)',
     };
     filterInfo.push(categoryNames[category] || category);
   }
@@ -89,10 +92,11 @@ export default function PostFilter({ initialPosts }: PostFilterProps) {
           <label className="text-sm text-elegant-text-light">並び替え:</label>
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as 'date' | 'rating' | 'title')}
+            onChange={(e) => setSortBy(e.target.value as 'date' | 'date-oldest' | 'rating' | 'title')}
             className="px-3 py-1.5 bg-elegant-bg-light border border-elegant-border rounded text-elegant-text text-sm focus:outline-none focus:border-elegant-wine"
           >
             <option value="date">新しい順</option>
+            <option value="date-oldest">古い順</option>
             <option value="rating">評価順</option>
             <option value="title">タイトル順</option>
           </select>
@@ -103,18 +107,18 @@ export default function PostFilter({ initialPosts }: PostFilterProps) {
       {sortedPosts.length > 0 ? (
         <>
           <ElegantPostList
-            posts={filterInfo.length > 0 ? sortedPosts : (showAll ? sortedPosts : sortedPosts.slice(0, 9))}
+            posts={filterInfo.length > 0 ? sortedPosts : (showAll ? sortedPosts : sortedPosts.slice(0, 12))}
             title={filterInfo.length > 0 ? undefined : '最新の記事'}
             subtitle={filterInfo.length > 0 ? undefined : '大人の女性の色気と物語性に満ちた作品をご紹介'}
           />
-          {/* もっと見るボタン（フィルター未適用かつ9件以上ある場合のみ） */}
-          {filterInfo.length === 0 && sortedPosts.length > 9 && !showAll && (
+          {/* もっと見るボタン（フィルター未適用かつ12件以上ある場合のみ） */}
+          {filterInfo.length === 0 && sortedPosts.length > 12 && !showAll && (
             <div className="text-center mt-12">
               <button
                 onClick={() => setShowAll(true)}
                 className="px-8 py-4 bg-elegant-wine hover:bg-elegant-wine-light text-white font-serif-jp font-medium rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border-2 border-elegant-wine/50 hover:border-elegant-wine"
               >
-                もっと見る ({sortedPosts.length - 9}件)
+                もっと見る ({sortedPosts.length - 12}件)
               </button>
             </div>
           )}

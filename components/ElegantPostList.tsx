@@ -1,4 +1,4 @@
-import ElegantPostCard from './ElegantPostCard';
+import VideoCard from './VideoCard';
 import { PostData } from '@/lib/posts';
 
 interface ElegantPostListProps {
@@ -26,22 +26,13 @@ export default function ElegantPostList({ posts, title, subtitle }: ElegantPostL
         </div>
       )}
 
-      {/* 記事グリッド */}
+      {/* 記事グリッド（モバイル2列、PC4列） */}
       {posts.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
           {posts.map((post) => (
-            <ElegantPostCard
+            <VideoCard
               key={post.slug}
-              slug={post.slug}
-              title={post.title}
-              excerpt={post.excerpt || ''}
-              image={post.image || ''}
-              date={post.date}
-              tags={post.tags || []}
-              genre={post.genre}
-              rating={post.rating}
-              storyScore={post.storyScore}
-              actingScore={post.actingScore}
+              post={post}
             />
           ))}
         </div>
