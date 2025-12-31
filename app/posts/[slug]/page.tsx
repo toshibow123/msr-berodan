@@ -8,6 +8,8 @@ import ArticleContentWithPromo from '@/components/ArticleContentWithPromo'
 import AffiliateAdMock from '@/components/AffiliateAdMock'
 import EditorialRecommendations from '@/components/EditorialRecommendations'
 import MgstageAd from '@/components/MgstageAd'
+import MgstageWidgetAd from '@/components/MgstageWidgetAd'
+import MgsBanner from '@/components/MgsBanner'
 // PlayCircleアイコンをSVGで実装（React 19互換性のため）
 const PlayCircle = ({ className }: { className?: string }) => (
   <svg
@@ -268,10 +270,7 @@ export default async function PostPage({
         </div>
 
         {/* 広告位置1: 記事上部（タイトル下〜導入文直後） */}
-        <MgstageAd 
-          scriptUrl="https://www.mgstage.com/afscript/prestigebb/728_90/N2G56Q3UYEPYWXP7P8PKPRIDC3/"
-          containerId="mgstage-ad-top"
-        />
+        <MgsBanner />
 
         {/* メインビジュアル */}
         {post.image && (
