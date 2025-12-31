@@ -57,21 +57,8 @@ export async function getAllPosts(): Promise<PostData[]> {
       }
     })
 
-  // 現在の日付を取得
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  
-  // 未来の日付の記事をフィルタリング（非表示）
-  const filteredPosts = allPostsData.filter((post) => {
-    if (!post.date) return false
-    const postDate = new Date(post.date)
-    postDate.setHours(0, 0, 0, 0)
-    // 今日以前の日付のみ表示
-    return postDate <= today
-  })
-
-  // 日付順にソート
-  return filteredPosts.sort((a, b) => {
+  // 日付順にソート（未来の日付のフィルタリングはクライアントサイドで行う）
+  return allPostsData.sort((a, b) => {
     if (a.date < b.date) {
       return 1
     } else {
