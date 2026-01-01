@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { getPostBySlug, getAllPostSlugs, getAllPosts } from '@/lib/posts'
+import { getPostBySlug, getAllPostSlugs, getAllPosts, getAdjacentPosts } from '@/lib/posts'
 import RelatedPosts from '@/components/RelatedPosts'
 import FanzaSubscriptionPromo from '@/components/FanzaSubscriptionPromo'
 import ArticleContentWithPromo from '@/components/ArticleContentWithPromo'
@@ -10,6 +10,7 @@ import EditorialRecommendations from '@/components/EditorialRecommendations'
 import MgstageAd from '@/components/MgstageAd'
 import MgstageWidgetAd from '@/components/MgstageWidgetAd'
 import MgsBanner from '@/components/MgsBanner'
+import PostNavigation from '@/components/PostNavigation'
 // PlayCircleアイコンをSVGで実装（React 19互換性のため）
 const PlayCircle = ({ className }: { className?: string }) => (
   <svg
@@ -125,6 +126,9 @@ export default async function PostPage({
 
   // 関連記事用に全記事を取得
   const allPosts = await getAllPosts()
+  
+  // 前後の記事を取得
+  const { prevPost, nextPost } = await getAdjacentPosts(slug)
 
   const averageRating = calculateAverageRating(post)
   const ratings = extractRatings(post, parseFloat(averageRating))
@@ -269,6 +273,9 @@ export default async function PostPage({
           )}
         </div>
 
+        {/* 前後の記事ナビゲーション（上部） */}
+        <PostNavigation prevPost={prevPost} nextPost={nextPost} />
+
         {/* 広告位置1: 記事上部（タイトル下〜導入文直後） */}
         <MgsBanner />
 
@@ -324,6 +331,9 @@ export default async function PostPage({
 
         {/* 広告位置4: 関連記事の前 */}
         <AffiliateAdMock position="bottom" size="responsive" />
+
+        {/* 前後の記事ナビゲーション（下部） */}
+        <PostNavigation prevPost={prevPost} nextPost={nextPost} />
 
         {/* 関連記事 */}
         <div data-related-posts>

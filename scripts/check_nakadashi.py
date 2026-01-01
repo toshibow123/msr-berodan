@@ -227,17 +227,17 @@ def add_nakadashi_tag_to_article(file_path: Path) -> bool:
         # 記事本文に「中出し」の情報を追加（既に含まれていない場合）
         new_rest_content = rest_content
         if '中出し' not in rest_content and '[K1]' not in rest_content:
-            # 「ここがエロかったｗ」セクションの後に追加
-            ero_section_pattern = r'(## ここがエロかったｗ.*?\n)'
+            # 「物語の魅力」または「ストーリーの深み」セクションの後に追加
+            ero_section_pattern = r'(## (物語の魅力|ストーリーの深み|物語が描き出す世界|作品が語るもの).*?\n)'
             ero_match = re.search(ero_section_pattern, rest_content, re.DOTALL)
             
             if ero_match:
-                # 「ここがエロかったｗ」セクションの後に追加
+                # 「物語の魅力」セクションの後に追加
                 insert_pos = ero_match.end()
                 nakadashi_note = '\n**🎯 中出し作品**\n\nこの作品は[K1]シーンが含まれています。\n\n'
                 new_rest_content = rest_content[:insert_pos] + nakadashi_note + rest_content[insert_pos:]
             else:
-                # 「ここがエロかったｗ」セクションがない場合は、最初の見出しの後に追加
+                # 該当セクションがない場合は、最初の見出しの後に追加
                 first_heading_pattern = r'(## .*?\n)'
                 first_heading_match = re.search(first_heading_pattern, rest_content)
                 if first_heading_match:

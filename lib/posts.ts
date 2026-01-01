@@ -172,3 +172,32 @@ export async function getAllTags(): Promise<{ tag: string; count: number }[]> {
     .sort((a, b) => b.count - a.count)
 }
 
+export async function getAdjacentPosts(slug: string): Promise<{
+  prevPost: { slug: string; title: string; image?: string } | null
+  nextPost: { slug: string; title: string; image?: string } | null
+}> {
+  const allPosts = await getAllPosts()
+  const currentIndex = allPosts.findIndex((post) => post.slug === slug)
+  
+  if (currentIndex === -1) {
+    return { prevPost: null, nextPost: null }
+  }
+  
+  const prevPost = currentIndex > 0 
+    ? {
+        slug: allPosts[currentIndex - 1].slug,
+        title: allPosts[currentIndex - 1].title,
+        image: allPosts[currentIndex - 1].image,
+      }
+    : null
+  
+  const nextPost = currentIndex < allPosts.length - 1
+    ? {
+        slug: allPosts[currentIndex + 1].slug,
+        title: allPosts[currentIndex + 1].title,
+        image: allPosts[currentIndex + 1].image,
+      }
+    : null
+  
+  return { prevPost, nextPost }
+}
