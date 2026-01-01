@@ -39,7 +39,7 @@ export default async function Home() {
           <aside className="w-full lg:w-80 flex-shrink-0 order-2 lg:order-1">
             <Suspense fallback={<div className="h-96 bg-elegant-bg-light animate-pulse rounded-xl"></div>}>
               <Sidebar allPosts={allPosts} tags={allTags} />
-            </Suspense>
+                  </Suspense>
           </aside>
 
           {/* 記事一覧 */}
@@ -47,13 +47,13 @@ export default async function Home() {
             <Suspense fallback={
               <div className="text-center text-elegant-text-light">
                 読み込み中...
-              </div>
+        </div>
             }>
               <FilteredPostList allPosts={allPosts} />
             </Suspense>
-          </main>
+      </main>
         </div>
-      </div>
+    </div>
     </>
   )
 }

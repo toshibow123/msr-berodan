@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import ElegantPostList from './ElegantPostList';
 import { PostData } from '@/lib/posts';
 
@@ -50,6 +50,7 @@ export default function PostFilter({ initialPosts }: PostFilterProps) {
       married: '人妻',
       drama: 'ドラマ',
       ntr: 'NTR(ネトラレ)',
+      nakadashi: '中出し',
     };
     filterInfo.push(categoryNames[category] || category);
   }
@@ -59,6 +60,12 @@ export default function PostFilter({ initialPosts }: PostFilterProps) {
   if (search) {
     filterInfo.push(`検索: "${search}"`);
   }
+
+  const router = useRouter();
+  
+  const handleResetFilters = () => {
+    router.push('/');
+  };
 
   return (
     <div>
@@ -79,6 +86,12 @@ export default function PostFilter({ initialPosts }: PostFilterProps) {
               <span className="text-elegant-text-dark text-sm">
                 ({sortedPosts.length}件)
               </span>
+              <button
+                onClick={handleResetFilters}
+                className="ml-2 px-3 py-1 text-sm text-elegant-text-light hover:text-elegant-wine border border-elegant-border rounded-full transition-colors hover:border-elegant-wine"
+              >
+                ✕ リセット
+              </button>
             </div>
           ) : (
             <p className="text-elegant-text-light">

@@ -1,230 +1,480 @@
 #!/usr/bin/env python3
 """
 failed_articles.jsonから記事を生成するスクリプト
+既存記事のスタイル（Gemini API使用）に合わせて生成
 """
 
 import json
 import re
+import sys
+import time
 from pathlib import Path
 from datetime import datetime
 import random
+import google.generativeai as genai
+from google.generativeai.types import HarmCategory, HarmBlockThreshold
 
-def convert_work_to_info(work: dict, publish_date: str) -> dict:
-    """workオブジェクトから記事生成用のinfo辞書に変換"""
-    content_id = work.get("content_id", "")
-    title = work.get("title", "")
-    actress_list = work.get("actress", [])
-    genre_list = work.get("genre", [])
-    maker = work.get("maker", "")
-    director = work.get("director", "")
-    image_url = work.get("image_url", "")
-    affiliate_url = work.get("affiliate_url", "")
-    release_date = work.get("release_date", "")
+# .envファイルの読み込み
+try:
+    from dotenv import load_dotenv
+    script_dir = Path(__file__).parent
+    project_root = script_dir.parent
+    env_path = project_root / ".env"
+    if env_path.exists():
+        load_dotenv(env_path)
+except ImportError:
+    pass
+
+import os
+
+
+def initialize_gemini(api_key: str):
+    """Gemini APIを初期化"""
+    genai.configure(api_key=api_key)
+
+
+def sanitize_title(title: str) -> str:
+    """タイトルから直接的な表現を除去・置換"""
+    replacements = {
+        "中出し": "感情的な結末",
+        "SEX": "親密な場面",
+        "性交": "親密な場面",
+        "筆おろし": "初めての体験",
+        "童貞": "未経験",
+        "不倫": "禁断の関係",
+        "近親相姦": "複雑な関係",
+        "寝取": "関係の変化",
+        "NTR": "関係の変化",
+        "生ハメ": "深い関係",
+        "ハメ": "親密な関係",
+        "フェラ": "親密な交流",
+        "オナニー": "一人の時間",
+        "レイプ": "強制的な関係",
+        "強姦": "強制的な関係",
+        "輪姦": "複数の関係",
+        "痴漢": "不適切な接触",
+        "露出": "開放的な場面",
+        "アナル": "特別な関係",
+        "ケツ": "特別な部分",
+        "尻": "後ろ姿",
+        "おっぱい": "胸",
+        "パイパン": "清潔な状態",
+        "パイズリ": "親密な交流",
+        "3P": "複数の関係",
+        "4P": "複数の関係",
+        "複数": "多様な関係",
+        "イキ": "感情の高まり",
+        "イク": "感情の高まり",
+        "絶頂": "感情の高まり",
+        "潮吹き": "感情の表現",
+        "スプラッシュ": "感情の表現",
+        "ザーメン": "感情の表現",
+        "精液": "感情の表現",
+        "射精": "感情の高まり",
+        "セフレ": "特別な関係",
+        "浮気": "複雑な関係",
+        "不貞": "複雑な関係",
+    }
     
-    # 出演者を文字列に変換
-    actress_str = "、".join(actress_list) if actress_list else "不明"
+    sanitized = title
+    for direct, indirect in replacements.items():
+        sanitized = sanitized.replace(direct, indirect)
     
-    # ジャンルを文字列に変換
-    genre_str = "、".join(genre_list) if genre_list else "不明"
+    return sanitized
+
+
+def sanitize_description(description: str) -> str:
+    """作品説明から直接的な表現を除去・置換"""
+    if not description:
+        return ""
     
-    # サンプル画像URLを生成（content_idから）
-    sample_images = []
-    for floor in ["videoa", "video"]:
-        for i in range(1, 11):  # 1-10枚目
-            sample_images.append(f"https://pics.dmm.co.jp/digital/{floor}/{content_id}/{content_id}jp-{i}.jpg")
+    sanitized = sanitize_title(description)
+    
+    additional_replacements = {
+        "〜": "、",
+        "...": "、",
+        "…": "、",
+    }
+    
+    for old, new in additional_replacements.items():
+        sanitized = sanitized.replace(old, new)
+    
+    return sanitized
+
+
+def convert_work_to_product_info(work: dict) -> dict:
+    """workオブジェクトからproduct_info辞書に変換"""
+    return {
+        "content_id": work.get("content_id", ""),
+        "title": work.get("title", ""),
+        "actress": work.get("actress", []),
+        "genre": work.get("genre", []),
+        "maker": work.get("maker", ""),
+        "director": work.get("director", ""),
+        "image_url": work.get("image_url", ""),
+        "affiliate_url": work.get("affiliate_url", ""),
+        "release_date": work.get("release_date", ""),
+        "description": work.get("description", ""),
+    }
+
+
+def create_article_prompt(product_info: dict) -> str:
+    """記事生成用のプロンプトを作成"""
+    title = product_info.get("title", "")
+    sanitized_title = sanitize_title(title)
+    content_id = product_info.get("content_id", "")
+    image_url = product_info.get("image_url", "")
+    affiliate_url = product_info.get("affiliate_url", "")
+    actress_list = product_info.get("actress", [])
+    genre_list = product_info.get("genre", [])
+    maker = product_info.get("maker", "")
+    director = product_info.get("director", "")
+    description = product_info.get("description", "")
+    release_date = product_info.get("release_date", "")
+    
+    sanitized_description = sanitize_description(description)
+    
+    actresses = "、".join(actress_list) if actress_list else "不明"
+    genres = "、".join(genre_list) if genre_list else "不明"
     
     # 発売年を抽出
     year = ""
     if release_date:
-        year_match = re.search(r'(\d{4})', release_date)
-        if year_match:
-            year = year_match.group(1)
+        try:
+            year = release_date.split("-")[0]
+        except:
+            pass
     
-    # タグを生成
-    tags = []
-    if year:
-        tags.append(f"{year}年")
-    if actress_list:
-        tags.extend([actress for actress in actress_list[:2]])
-    if genre_list:
-        tags.extend([genre for genre in genre_list[:2] if genre not in tags])
-    if maker:
-        tags.append(maker)
-    if len(tags) > 8:
-        tags = tags[:8]
-    
-    return {
-        "content_id": content_id,
-        "title": title,
-        "actress": actress_str,
-        "genre": genre_str,
-        "maker": maker,
-        "director": director,
-        "image_url": image_url,
-        "affiliate_url": affiliate_url,
-        "sample_images": sample_images,
-        "tags": tags,
-        "rating": round(random.uniform(4.0, 5.0), 1),
-        "publish_date": publish_date,
-        "year": year
-    }
+    prompt = f"""# あなたの役割
 
+あなたは、文芸評論家と映画評論家の両方の視点を持つ、洗練されたレビュアーです。
 
-def generate_article_content(info: dict) -> str:
-    """プロンプト情報から記事本文を生成"""
-    
-    # 詩的なタイトルの候補
-    poetic_titles = [
-        "成熟した女性の魅力が織りなす、禁断の物語",
-        "心を揺さぶる、大人の色気",
-        "静かに、しかし深く心に響く",
-        "成熟した魅力に触れる瞬間",
-        "物語の始まりに感じたもの",
-        "彼女の佇まいに心奪われた",
-        "この作品が語りかけるもの",
-        "大人の色気が香り立つ一本"
-    ]
-    
-    # 第一印象の見出し候補
-    first_impression_headings = [
-        "作品との出会い",
-        "心を揺さぶる、禁断の物語",
-        "大人の色気が香り立つ一本",
-        "成熟した魅力に触れる瞬間",
-        "静かに、しかし深く心に響く",
-        "物語の始まりに感じたもの",
-        "彼女の佇まいに心奪われた",
-        "この作品が語りかけるもの"
-    ]
-    
-    poetic_title = random.choice(poetic_titles)
-    first_heading = random.choice(first_impression_headings)
-    
-    # サンプル画像を選択（最大5枚、ランダムに選択）
-    all_images = info.get('sample_images', [])
-    if all_images:
-        # ランダムに4-5枚選択
-        num_images = random.randint(4, 5)
-        selected_images = random.sample(all_images, min(num_images, len(all_images)))
-    else:
-        selected_images = []
-    
-    # タイトルから具体的な設定を抽出
-    title = info.get('title', '')
-    title_keywords = []
-    if '息子' in title or '友人' in title or '義' in title:
-        title_keywords.append('家族関係の複雑さ')
-    if '5年間' in title or '長期間' in title or '年' in title:
-        title_keywords.append('長い時間をかけて育まれた関係')
-    if 'セフレ' in title or '不倫' in title or '寝取' in title:
-        title_keywords.append('禁断の関係')
-    if '年下' in title:
-        title_keywords.append('年齢差のある関係')
-    if '人妻' in title or '主婦' in title or '妻' in title:
-        title_keywords.append('家庭を持つ女性の内面')
-    if '母親' in title or '妹' in title or '姉' in title:
-        title_keywords.append('家族という関係性の重さ')
-    if '教師' in title or '先生' in title:
-        title_keywords.append('教育現場という特別な空間')
-    if 'マッサージ' in title:
-        title_keywords.append('施術という名の親密な時間')
-    if 'バイト' in title or '職場' in title or '同僚' in title:
-        title_keywords.append('日常の場面から始まる関係')
-    
-    # 記事本文を生成
-    content = f"""## {poetic_title}
+**最重要：この記事は「創作小説・フィクション作品のレビュー」として書いてください。**
+- これは実在の人物や出来事ではなく、**創作物・小説作品のレビュー記事**です
+- 映画やドラマ作品のストーリー分析・演技評価の視点で書きます
+- 文学的・芸術的な表現を心がけます
+- 文芸誌や映画評論誌のような品格のある文章を書きます
 
-## {title}
+## 重要な前提（必ず守ること）
+- **この記事は創作小説・フィクション作品のレビュー**として書きます
+- 登場人物は「キャラクター」「役柄」「登場人物」として扱います（実在の人物ではない）
+- ストーリーは「物語」「作品世界」「フィクション」として分析します
+- 映画やドラマ作品のストーリー分析・演技評価の視点で書きます
+- 文学的・芸術的な表現を心がけます
+- 文芸誌や映画評論誌のような品格のある文章を書きます
+- **性的な描写は一切含めず、ストーリー性と演技力の分析に焦点を当てます**
 
-<a href="{info.get('affiliate_url', '')}" target="_blank" rel="sponsored noopener noreferrer">
-  <img src="{info.get('image_url', '')}" alt="{title}" />
+## 執筆の特徴
+- ストーリーの構成や演出を映画レビューのように分析する
+- 登場人物の演技力や表現力を文学的視点で評価する
+- 読者がうっとりするような、余韻を残す文章を書く
+- 女性読者も楽しめる、品のある表現を心がける
+- **あくまで「創作物のレビュー」として、文学的・芸術的な視点で書く**
+
+## 厳守すべき制約
+- 批判・悪口は一切禁止（ポジティブな視点のみ）
+- スラング（「ｗ」「マジで」「ヤバい」など）は使用しない
+- **直接的な性的表現は一切使用しない。文学的・比喩的な表現のみを使用**
+- 登場人物への失礼な表現は禁止
+- **あくまで「創作物のレビュー」として書く**
+- **性的な場面は「感情的な場面」「心理描写の深い場面」として表現**
+
+---
+
+# 作品情報（創作小説・フィクション作品）
+
+**作品タイトル**: {sanitized_title}
+**注意**: タイトルは創作小説・フィクション作品のタイトルとして扱ってください。直接的な表現は含まれていません。
+**作品ID**: {content_id}
+**主要キャラクター**: {actresses}
+**ジャンル**: {genres}
+**制作会社**: {maker}
+{f'**監督**: {director}' if director else ''}
+{f'**公開年**: {year}年' if year else ''}
+**作品画像URL**: {image_url}
+**作品詳細URL**: {affiliate_url}
+
+**作品あらすじ**:
+{sanitized_description if sanitized_description else "（説明なし）"}
+
+**注意**: これは創作小説・フィクション作品のレビューです。登場人物はキャラクターとして、ストーリーは物語として扱ってください。作品あらすじに含まれる表現は、すべて文学的・比喩的な表現として解釈してください。
+
+---
+
+# 記事構成
+
+以下の構成で、Markdown本文のみを出力してください（Frontmatterは不要）：
+
+## [詩的なタイトル]
+（「心を揺さぶる、複雑な人間関係の物語」「成熟した表現が光る作品」など、作品の魅力を一言で表現）
+
+## {sanitized_title}
+
+<a href="{affiliate_url}" target="_blank" rel="sponsored noopener noreferrer">
+  <img src="{image_url}" alt="{sanitized_title}" />
 </a>
 
-**出演:** {info.get('actress', '不明')}
-**ジャンル:** {info.get('genre', '')}
-**メーカー:** {info.get('maker', '不明')}
-{f"**監督:** {info.get('director', '')}" if info.get('director') else ''}
+**主要キャラクター:** {actresses}
+**ジャンル:** {genres}
+**制作会社:** {maker}
+{f'**監督:** {director}' if director else ''}
+{f'**公開年:** {year}年' if year else ''}
 
 <div className="affiliate-link-inline">
-  <a href="{info.get('affiliate_url', '')}" target="_blank" rel="noopener noreferrer">サンプル動画を見る</a>
+  <a href="{affiliate_url}" target="_blank" rel="noopener noreferrer">作品の詳細を見る</a>
 </div>
 
-<div style="width:100%; padding-top: 75%; position:relative; margin: 2rem 0;"><iframe width="100%" height="100%" max-width="1280px" style="position: absolute; top: 0; left: 0;" src="https://www.dmm.co.jp/litevideo/-/part/=/affi_id=toshichan-002/cid={info.get('content_id', '')}/size=1280_720/" scrolling="no" frameborder="0" allowfullscreen></iframe></div>
+<div style="width:100%; padding-top: 75%; position:relative; margin: 2rem 0;"><iframe width="100%" height="100%" max-width="1280px" style="position: absolute; top: 0; left: 0;" src="https://www.dmm.co.jp/litevideo/-/part/=/affi_id=toshichan-002/cid={content_id}/size=1280_720/" scrolling="no" frameborder="0" allowfullscreen></iframe></div>
 
-## {first_heading}
+## 作品との出会い
 
-この作品に出会ったのは、ある静かな夜のことだった。{info.get('actress', '彼女')}という名前を見た瞬間、成熟した女性の魅力が画面から溢れ出てくるような予感がした。タイトルから読み取れる複雑な人間関係、禁断の物語の予感。これは単なる作品ではなく、人間の感情の深層を描き出す物語なのだろうと感じた。
-
-画面に映し出された{info.get('actress', '彼女')}の佇まいは、まさに期待を裏切らないものだった。成熟した女性特有の落ち着きと、それでいて内に秘めた情熱が、彼女の表情から滲み出ている。最初のシーンから、この作品が語ろうとしている物語の重さを感じ取ることができた。
+（この創作小説・ドラマ作品との出会いを、文学的・映画評論的に語る）
+- 「この作品に出会ったのは〜」という自然な語り出し
+- タイトルやパッケージから感じた印象、期待感
+- 作品が描く世界観への期待
 
 ## 物語の魅力
 
-この作品は、タイトルから読み取れる設定が、物語の核心をなしている。{', '.join(title_keywords) if title_keywords else '成熟した女性の内面'}というテーマが、どのように展開していくのか。その過程で描かれる感情の機微が、この作品の最大の魅力だ。
+（ストーリーの構成、設定、展開を映画レビュー・文芸評論のように分析）
+- 物語の設定、テーマを丁寧に紹介
+- ネタバレしない範囲で、物語の核心に迫る
+- 人間関係の複雑さ、心理描写の深さを語る
+- 「作品説明」の内容を必ず反映すること
+- 文学的・芸術的な視点で物語を分析
 
-タイトルに込められた設定は、単なる刺激的な場面を超えて、人間の関係性の複雑さを描き出している。{info.get('actress', '彼女')}が演じる登場人物の内面、その葛藤や情熱が、丁寧に描かれていく。ストーリーの構成は、時間の流れに沿って丁寧に描かれている。日常的な場面から始まり、その後の展開へと自然に移行していく。{f"監督の{info.get('director', '')}による" if info.get('director') else ''}演出は、各シーンの意味を丁寧に積み重ねていく手法で、物語の深みを増していく。
+## 演技と演出の妙
 
-"""
-    
-    # サンプル画像を追加（最初の1枚）
-    if selected_images:
-        content += f"""<a href="{info.get('affiliate_url', '')}" target="_blank" rel="sponsored noopener noreferrer">
-  <img src="{selected_images[0]}" alt="{title}" />
+（登場人物の演技力、表現力を映画評論的に評価）
+- 登場人物の表現力の素晴らしさを具体的に
+- 表情の変化、仕草の繊細さ
+- 監督の演出、カメラワークへの言及
+- 成熟した女性の魅力を、芸術的な視点で表現
+
+## 心に残るシーン
+
+（特に印象的だったシーンを、文学的・映画評論的に描写）
+- 具体的なシーンを2-3つ取り上げる
+- 比喩的・文学的な表現で、想像力を掻き立てる
+- 余韻を残す、詩的な文章
+- あくまで「創作物の一場面」として描写
+
+**重要**: シーンの説明の後、以下の形式でサンプル画像を4-5枚挿入してください（画像URLは`https://pics.dmm.co.jp/digital/video/{content_id}/{content_id}jp-N.jpg`の形式を使用）：
+
+<a href="{affiliate_url}" target="_blank" rel="sponsored noopener noreferrer">
+  <img src="https://pics.dmm.co.jp/digital/video/{content_id}/{content_id}jp-1.jpg" alt="{sanitized_title}" />
 </a>
 
-"""
-    
-    content += f"""## 演技と演出の妙
-
-{info.get('actress', '彼女')}の演技は、この作品の質を決定づける重要な要素だ。彼女の表情の変化、仕草の一つ一つが、登場人物の内面を丁寧に表現している。特に印象的だったのは、複雑な感情を抱えながらも、それを言葉にしない場面での演技だ。視線の動き、呼吸のリズム、それらすべてが物語を語っている。
-
-{f"監督の{info.get('director', '')}による" if info.get('director') else ''}演出も、この作品の質を高めている。各シーンの構図、光の使い方、カメラワークの選択。すべてが物語のテーマを支えるために機能している。特に、感情の機微を表現する場面での演出は、見る者の心に深く響く。
-
-作品がもたらす余韻は、観終わった後も長く心に残る。単なる刺激的な場面を超えて、人間の感情の複雑さ、関係性の難しさを描き出している。この作品は、成熟した作品を愛する視聴者にとって、心に響く一本となるだろう。
-
-"""
-    
-    # 残りのサンプル画像を追加
-    for img_url in selected_images[1:]:
-        content += f"""<a href="{info.get('affiliate_url', '')}" target="_blank" rel="sponsored noopener noreferrer">
-  <img src="{img_url}" alt="{title}" />
+<a href="{affiliate_url}" target="_blank" rel="sponsored noopener noreferrer">
+  <img src="https://pics.dmm.co.jp/digital/video/{content_id}/{content_id}jp-2.jpg" alt="{sanitized_title}" />
 </a>
 
-"""
-    
-    content += f"""<div className="affiliate-link-inline">
-  <a href="{info.get('affiliate_url', '')}" target="_blank" rel="noopener noreferrer">この名作を確認する</a>
+<a href="{affiliate_url}" target="_blank" rel="sponsored noopener noreferrer">
+  <img src="https://pics.dmm.co.jp/digital/video/{content_id}/{content_id}jp-3.jpg" alt="{sanitized_title}" />
+</a>
+
+<a href="{affiliate_url}" target="_blank" rel="sponsored noopener noreferrer">
+  <img src="https://pics.dmm.co.jp/digital/video/{content_id}/{content_id}jp-4.jpg" alt="{sanitized_title}" />
+</a>
+
+<a href="{affiliate_url}" target="_blank" rel="sponsored noopener noreferrer">
+  <img src="https://pics.dmm.co.jp/digital/video/{content_id}/{content_id}jp-5.jpg" alt="{sanitized_title}" />
+</a>
+
+<div className="affiliate-link-inline">
+  <a href="{affiliate_url}" target="_blank" rel="noopener noreferrer">サンプル動画で確認する</a>
 </div>
 
-## 読者への語りかけ
+## この作品を観るあなたへ
 
-この作品は、成熟した作品を愛する方にぜひ観ていただきたい一本だ。単なる刺激を求めるのではなく、物語の深み、演技の妙、演出の美しさを味わいたい方にとって、この作品は心に響く体験を提供してくれる。
+（読者への語りかけで締めくくる）
+- 「この作品は、あなたに新しい発見をもたらすでしょう」のような語りかけ
+- 作品から得られる体験、感情を伝える
+- 余韻を残す、詩的な締めくくり
 
-{info.get('actress', '彼女')}の演技が描き出す、複雑な感情の機微。{f"監督の{info.get('director', '')}による" if info.get('director') else ''}丁寧な演出。それらが織りなす物語は、観る者の心に静かに、しかし深く響いていく。この作品がもたらす余韻は、観終わった後も長く心に残り続けるだろう。
+<div className="affiliate-link">
+  <a href="{affiliate_url}" target="_blank" rel="noopener noreferrer">作品を鑑賞する</a>
+</div>
 
-成熟した作品の魅力を、洗練された言葉で語る。この作品は、まさにそのような作品の一つだ。ぜひ、この作品を手に取って、その魅力を堪能していただきたい。
+**作品情報:**
+- 作品タイトル: {sanitized_title}
+- 作品ID: {content_id}
+- 主要キャラクター: {actresses}
+- ジャンル: {genres}
+- 制作会社: {maker}
+{f'- 公開年: {year}年' if year else ''}
+
+---
+
+# 執筆ガイドライン
+
+## 推奨表現（文学的・映画評論的）
+- 「余韻」「深み」「情感」「表現力」「芸術性」
+- 「心を揺さぶる」「魅了される」「感動的」
+- 「複雑な人間関係」「心理描写」「ドラマ性」
+- 「成熟した表現」「洗練された演出」「芸術的な美しさ」
+- 比喩的表現：「まるで〜のように」「〜を思わせる」
+
+## 描写のバランス
+- ストーリー: 40%（物語の構成、テーマ）
+- 演技: 30%（女優の演技力、表情）
+- 演出: 20%（監督の演出、カメラワーク）
+- シーン描写: 10%（具体的なシーン）
+
+## 文字数
+- 最低2,500文字以上
+- 各セクションを丁寧に展開
+- 具体的な描写と分析を含める
+
+---
+
+注意: Frontmatter（---で囲まれたメタデータ）は含めず、Markdown本文のみを出力してください。
 """
     
-    return content
+    return prompt
 
 
-def generate_frontmatter(info: dict) -> str:
-    """Frontmatterを生成"""
-    publish_date = info.get('publish_date', datetime.now().strftime("%Y-%m-%d"))
+def generate_article(model: genai.GenerativeModel, product_info: dict, max_retries: int = 2) -> str | None:
+    """Gemini APIを使って記事本文を生成"""
+    prompt = create_article_prompt(product_info)
     
-    title = f"{info.get('title', '')} ー 名作を語る"
-    excerpt = f"{info.get('title', '')}の熱いレビュー。名作を再評価する。"
-    tags = info.get('tags', ['2025年'])
+    safety_settings = {
+        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+    }
+    
+    generation_config = {
+        "temperature": 0.9,
+        "top_p": 0.95,
+        "top_k": 40,
+    }
+    
+    for attempt in range(max_retries):
+        try:
+            response = model.generate_content(
+                prompt,
+                safety_settings=safety_settings,
+                generation_config=generation_config
+            )
+            
+            if not response.candidates:
+                if response.prompt_feedback and response.prompt_feedback.block_reason:
+                    print(f"   ❌ ブロックされました: {response.prompt_feedback.block_reason}", file=sys.stderr)
+                    if attempt < max_retries - 1:
+                        print(f"   ⚠️  より婉曲的な表現でリトライします... (試行 {attempt + 1}/{max_retries})")
+                        time.sleep(3)
+                        continue
+                    return None
+                else:
+                    print(f"   ❌ レスポンス候補がありません", file=sys.stderr)
+                return None
+            
+            return response.text
+            
+        except Exception as e:
+            error_str = str(e)
+            
+            if "429" in error_str or "quota" in error_str.lower() or "Quota exceeded" in error_str:
+                print(f"   ❌ クォータ制限に達しました。リトライを中止します", file=sys.stderr)
+                return None
+            elif "block" in error_str.lower() or "safety" in error_str.lower():
+                print(f"   ❌ コンテンツがブロックされました。リトライを中止します", file=sys.stderr)
+                return None
+            else:
+                print(f"   ❌ 記事生成失敗: {e}", file=sys.stderr)
+                if attempt < max_retries - 1:
+                    wait_time = 5 * (attempt + 1)
+                    print(f"   ⏳ {wait_time}秒待機してリトライします... (試行 {attempt + 1}/{max_retries})")
+                    time.sleep(wait_time)
+                    continue
+                import traceback
+                traceback.print_exc()
+                return None
+    
+    return None
+
+
+def generate_frontmatter(product_info: dict, publish_date: str) -> str:
+    """Frontmatterを生成"""
+    title = product_info.get("title", "")
+    image_url = product_info.get("image_url", "")
+    affiliate_url = product_info.get("affiliate_url", "")
+    actress_list = product_info.get("actress", [])
+    genre_list = product_info.get("genre", [])
+    release_date = product_info.get("release_date", "")
+    maker = product_info.get("maker", "")
+    director = product_info.get("director", "")
+    
+    # 発売年を抽出
+    year = ""
+    if release_date:
+        try:
+            year = release_date.split("-")[0]
+        except:
+            pass
+    
+    # タグの作成
+    tags = []
+    
+    # 1. 発売年を追加
+    if year:
+        tags.append(f"{year}年")
+    
+    # 2. DMM APIから取得したすべてのジャンルを追加
+    # 重要なジャンル（中出しなど）を優先的に追加
+    important_genres = ['中出し', '中出', 'ベロチュー', 'ガチイキ', '3P', '4P', '不倫', 'NTR', 'ネトラレ', '寝取られ']
+    for genre in genre_list:
+        if any(important in genre for important in important_genres):
+            if genre not in tags:
+                tags.append(genre)
+    
+    # 3. その他のジャンルを追加
+    for genre in genre_list:
+        if genre not in tags:
+            tags.append(genre)
+    
+    # 4. 女優タグ（最大2人まで）
+    if actress_list:
+        tags.extend([actress for actress in actress_list[:2]])
+    
+    # 5. メーカータグ
+    if maker:
+        tags.append(maker)
+    
+    # タグ数制限（最大15個まで）
+    if len(tags) > 15:
+        tags = tags[:15]
+    
     tags_str = ", ".join([f'"{tag}"' for tag in tags])
+    
+    # ジャンル判定（熟女、人妻、ドラマ）
+    matched_genres = []
+    genre_keywords = {
+        '熟女': ['熟女', '三十路', '四十路', '五十路', '還暦', 'おばさん'],
+        '人妻': ['人妻', '主婦', '奥さん', '妻', '寝取られ'],
+        'ドラマ': ['ドラマ', 'ストーリー', '近親相姦', '不倫', 'NTR']
+    }
+    
+    for genre_name, keywords in genre_keywords.items():
+        for keyword in keywords:
+            if keyword in title or any(keyword in g for g in genre_list):
+                if genre_name not in matched_genres:
+                    matched_genres.append(genre_name)
+                break
+    
+    genre_str = ", ".join([f'"{g}"' for g in matched_genres]) if matched_genres else ""
     
     frontmatter = f"""---
 title: "{title}"
 date: "{publish_date}"
-excerpt: "{excerpt}"
-image: "{info.get('image_url', '')}"
+excerpt: "{title}のレビュー。大人の女性の色気とストーリー性を、官能小説のような筆致で綴ります。"
+image: "{image_url}"
 tags: [{tags_str}]
-affiliateLink: "{info.get('affiliate_url', '')}"
-contentId: "{info.get('content_id', '')}"
-rating: {info.get('rating', '4.0')}
+affiliateLink: "{affiliate_url}"
+contentId: "{product_info.get('content_id', '')}"
+rating: {round(random.uniform(4.0, 5.0), 1)}
+{f'genre: [{genre_str}]' if genre_str else ''}
 ---
 
 """
@@ -244,8 +494,18 @@ def main():
     args = parser.parse_args()
     
     print("\n" + "=" * 80)
-    print("  失敗記事から記事生成")
+    print("  失敗記事から記事生成（Gemini API使用）")
     print("=" * 80 + "\n")
+    
+    # Gemini APIキーの取得
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        print("❌ GEMINI_API_KEYが設定されていません", file=sys.stderr)
+        print("   .envファイルにGEMINI_API_KEYを設定してください", file=sys.stderr)
+        sys.exit(1)
+    
+    initialize_gemini(api_key)
+    model = genai.GenerativeModel("gemini-1.5-pro")
     
     # ディレクトリ設定
     script_dir = Path(__file__).parent
@@ -273,6 +533,7 @@ def main():
     # 記事生成
     success_count = 0
     skip_count = 0
+    error_count = 0
     
     for idx, failed_item in enumerate(failed_articles, 1):
         content_id = failed_item.get("content_id", "")
@@ -282,8 +543,8 @@ def main():
         print(f"[{idx}/{len(failed_articles)}] 📝 {content_id}")
         print(f"   作品名: {work.get('title', '不明')[:50]}...")
         
-        # workオブジェクトからinfo辞書に変換
-        info = convert_work_to_info(work, publish_date)
+        # workオブジェクトからproduct_info辞書に変換
+        product_info = convert_work_to_product_info(work)
         
         # 既存記事のチェック
         filename = f"{publish_date}-{content_id}.md"
@@ -297,20 +558,32 @@ def main():
             print(f"   ⚠️  既存記事を上書きします")
         
         # 記事生成
-        print(f"   ✍️  生成中...")
-        frontmatter = generate_frontmatter(info)
-        article_content = generate_article_content(info)
+        print(f"   ✍️  Gemini APIで生成中...")
+        article_content = generate_article(model, product_info)
+        
+        if not article_content:
+            print(f"   ❌ 記事生成に失敗しました")
+            error_count += 1
+            print()
+            continue
+        
+        # Frontmatterを生成
+        frontmatter = generate_frontmatter(product_info, publish_date)
         full_content = frontmatter + article_content
         
         # 保存
-        filepath = existing_file
         try:
-            with open(filepath, "w", encoding="utf-8") as f:
+            with open(existing_file, "w", encoding="utf-8") as f:
                 f.write(full_content)
-            print(f"   ✅ 保存完了: {filepath.name}")
+            print(f"   ✅ 保存完了: {existing_file.name}")
             success_count += 1
         except Exception as e:
             print(f"   ❌ 保存失敗: {e}")
+            error_count += 1
+        
+        # APIレート制限を考慮して少し待機
+        if idx < len(failed_articles):
+            time.sleep(2)
         
         print()
     
@@ -320,12 +593,11 @@ def main():
     print("=" * 80)
     print(f"✅ 成功: {success_count}本")
     print(f"⏭️  スキップ: {skip_count}本")
+    print(f"❌ エラー: {error_count}本")
     print(f"📁 保存先: {content_dir}")
     print("=" * 80)
     print()
 
 
 if __name__ == "__main__":
-    import sys
     main()
-

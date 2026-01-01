@@ -106,7 +106,7 @@ export default function RootLayout({
 
           {/* メインコンテンツ */}
           <main className="flex-1">
-            {children}
+          {children}
           </main>
 
           {/* フッター */}

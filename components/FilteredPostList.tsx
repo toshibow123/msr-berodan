@@ -28,6 +28,12 @@ export default function FilteredPostList({ allPosts }: FilteredPostListProps) {
   const category = searchParams.get('category');
   if (category && category !== 'all') {
     filteredPosts = filteredPosts.filter(post => {
+      if (category === 'nakadashi') {
+        // 中出しフィルター: tagsに「中出し」が含まれているかチェック
+        const tags = post.tags || [];
+        return tags.some(t => String(t).trim() === '中出し');
+      }
+      
       const genres = post.genre || [];
       const categoryMap: Record<string, string[]> = {
         mature: ['熟女', '三十路', '四十路', '五十路'],
@@ -45,7 +51,8 @@ export default function FilteredPostList({ allPosts }: FilteredPostListProps) {
   if (tag) {
     filteredPosts = filteredPosts.filter(post => {
       const tags = post.tags || [];
-      return tags.some(t => String(t).includes(tag));
+      // 完全一致でチェック（「中出し」など正確に一致する必要がある）
+      return tags.some(t => String(t).trim() === tag.trim());
     });
   }
 

@@ -520,27 +520,39 @@ def save_article(content: str, product_info: dict, publish_date: str, output_dir
     # タグの作成
     tags = []
     
-    # 該当ジャンルを追加
+    # 1. マッチしたジャンル（熟女、人妻、ドラマなど）を追加
     tags.extend([f'"{g}"' for g in matched_genres])
     
-    # 発売年を追加
+    # 2. 発売年を追加
     if year:
         tags.append(f'"{year}年"')
     
-    # 女優タグ（最大2人まで）
+    # 3. DMM APIから取得したすべてのジャンルを追加（重複を避ける）
+    # 重要なジャンル（中出しなど）を優先的に追加
+    important_genres = ['中出し', '中出', 'ベロチュー', 'ガチイキ', '3P', '4P', '不倫', 'NTR', 'ネトラレ', '寝取られ']
+    for genre in genre_list:
+        genre_quoted = f'"{genre}"'
+        # 重要なジャンルは優先的に追加
+        if any(important in genre for important in important_genres):
+            if genre_quoted not in tags:
+                tags.append(genre_quoted)
+    
+    # 4. その他のジャンルを追加
+    for genre in genre_list:
+        genre_quoted = f'"{genre}"'
+        if genre_quoted not in tags:
+            tags.append(genre_quoted)
+    
+    # 5. 女優タグ（最大2人まで）
     if actress_list:
         tags.extend([f'"{actress}"' for actress in actress_list[:2]])
     
-    # ジャンルタグ（最大2つまで、重複を避ける）
-    for genre in genre_list[:2]:
-        if f'"{genre}"' not in tags:
-            tags.append(f'"{genre}"')
-    
-    # メーカータグ
+    # 6. メーカータグ
     if maker:
         tags.append(f'"{maker}"')
     
-    tags_str = ", ".join(tags[:8])  # 最大8個まで
+    # タグ数制限を緩和（最大15個まで）
+    tags_str = ", ".join(tags[:15])
     
     # 抜粋を生成
     excerpt = f"{title}のレビュー。大人の女性の色気とストーリー性を、官能小説のような筆致で綴ります。"

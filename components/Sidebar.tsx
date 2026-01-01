@@ -92,8 +92,9 @@ export default function Sidebar({ allPosts, tags }: SidebarProps) {
     router.push('/');
   };
 
-  // 人気タグ（上位10個）
-  const popularTags = tags.slice(0, 10);
+  // タグの表示制御（10個のみ表示、残りは別ページで確認）
+  const initialTagCount = 10;
+  const visibleTags = tags.slice(0, initialTagCount);
 
   // FANZA TV（DMMプレミアム）のアフィリエイトリンクを生成
   const affiliateId = 'toshichan-002'
@@ -136,6 +137,8 @@ export default function Sidebar({ allPosts, tags }: SidebarProps) {
             { id: 'mature', label: '熟女', icon: '🌹' },
             { id: 'married', label: '人妻', icon: '💍' },
             { id: 'drama', label: 'ドラマ', icon: '🎭' },
+            { id: 'ntr', label: 'NTR(ネトラレ)', icon: '💔' },
+            { id: 'nakadashi', label: '中出し', icon: '🎯' },
           ].map((category) => (
             <button
               key={category.id}
@@ -160,7 +163,7 @@ export default function Sidebar({ allPosts, tags }: SidebarProps) {
       <div className="bg-elegant-bg-light rounded-xl p-6 border border-elegant-border">
         <h3 className="text-lg font-serif-jp text-elegant-wine mb-4">人気のタグ</h3>
         <div className="flex flex-wrap gap-2">
-          {popularTags.map(({ tag, count }) => (
+          {visibleTags.map(({ tag, count }) => (
             <button
               key={tag}
               onClick={() => handleTagClick(tag)}
@@ -177,6 +180,14 @@ export default function Sidebar({ allPosts, tags }: SidebarProps) {
             </button>
           ))}
         </div>
+        {tags.length > initialTagCount && (
+          <Link
+            href="/tags"
+            className="mt-4 block text-center text-sm text-elegant-wine hover:text-elegant-wine/80 transition-colors border border-elegant-border rounded px-4 py-2 hover:border-elegant-wine"
+          >
+            すべてのタグを見る ({tags.length}件)
+          </Link>
+        )}
       </div>
 
       {/* 統計情報 */}
@@ -184,8 +195,19 @@ export default function Sidebar({ allPosts, tags }: SidebarProps) {
         <h3 className="text-lg font-serif-jp text-elegant-wine mb-4">統計</h3>
         <div className="space-y-2 text-sm text-elegant-text-light">
           <div className="flex justify-between">
-            <span>総記事数</span>
-            <span className="font-semibold text-elegant-wine">{allPosts.length}</span>
+            <span>公開済み記事数</span>
+            <span className="font-semibold text-elegant-wine">
+              {(() => {
+                const today = new Date()
+                today.setHours(0, 0, 0, 0)
+                return allPosts.filter(post => {
+                  if (!post.date) return false
+                  const postDate = new Date(post.date)
+                  postDate.setHours(0, 0, 0, 0)
+                  return postDate <= today
+                }).length
+              })()}
+            </span>
           </div>
           <div className="flex justify-between">
             <span>総タグ数</span>

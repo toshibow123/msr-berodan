@@ -142,7 +142,21 @@ export async function getAllTags(): Promise<{ tag: string; count: number }[]> {
   const posts = await getAllPosts()
   const tagCount: Record<string, number> = {}
   
+  // 現在の日付を取得（ビルド時点の日付）
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  
   posts.forEach((post) => {
+    // 未来の日付の記事は除外
+    if (post.date) {
+      const postDate = new Date(post.date)
+      postDate.setHours(0, 0, 0, 0)
+      // 今日より未来の日付の記事はスキップ
+      if (postDate > today) {
+        return
+      }
+    }
+    
     if (post.tags && Array.isArray(post.tags)) {
       post.tags.forEach((tag) => {
         const tagStr = String(tag).trim()
