@@ -99,11 +99,14 @@ def fetch_dmm_ranking(
         "site": "FANZA",
         "service": "digital",
         "floor": "videoa",
-        "sort": sort,
         "hits": hits,
         "offset": offset,
         "output": "json"
     }
+    
+    # sortパラメータを追加（Noneの場合は追加しない）
+    if sort:
+        params["sort"] = sort
     
     # オプションパラメータを追加
     if keyword:
@@ -461,6 +464,9 @@ def main():
         try:
             all_items = []
             
+            # base_offsetの初期化
+            base_offset = 0
+            
             # 取得モードに応じて複数ページから取得
             if args.mode == "ranking":
                 # ランキング順のみ
@@ -490,10 +496,14 @@ def main():
                 # 日付範囲指定時は、offsetを大きくして過去のページを取得
                 # 2014年から取得する場合、offsetを大きく設定
                 if date_from:
-                    # 2014年から取得する場合、offsetを5000程度に設定
+                    # 開始年からoffsetを計算
                     try:
                         year = int(date_from.split("-")[0])
-                        if year <= 2015:
+                        if year <= 2005:
+                            base_offset = 10000  # 2005年以前はoffsetを非常に大きく
+                        elif year <= 2010:
+                            base_offset = 8000
+                        elif year <= 2015:
                             base_offset = 5000  # 2015年以前はoffsetを大きく
                         elif year <= 2018:
                             base_offset = 3000
@@ -505,6 +515,23 @@ def main():
                         base_offset = 1000
                 else:
                     base_offset = 0
+                
+                # 日付範囲指定時は、より多くのページを取得する
+                # 古いデータほど多くのページが必要
+                if date_from:
+                    try:
+                        year = int(date_from.split("-")[0])
+                        if year <= 2010:
+                            # 2005-2010年は100ページ以上取得
+                            pages_to_fetch = max(pages_to_fetch, 100)
+                        elif year <= 2015:
+                            # 2011-2015年は50ページ取得
+                            pages_to_fetch = max(pages_to_fetch, 50)
+                        elif year <= 2018:
+                            # 2016-2018年は30ページ取得
+                            pages_to_fetch = max(pages_to_fetch, 30)
+                    except:
+                        pages_to_fetch = max(pages_to_fetch, 20)
             
             # 複数ページから取得
             for page in range(1, pages_to_fetch + 1):
@@ -517,11 +544,16 @@ def main():
                 if pages_to_fetch > 1:
                     print(f"   📄 ページ {page}/{pages_to_fetch} 取得中（offset: {offset}）...")
                 
+                # keywordがある場合、sort=rankは使えないため、sort_modeをdateに変更
+                actual_sort = sort_mode
+                if genre_info['keyword'] and not args.genre_id and sort_mode == "rank":
+                    actual_sort = None  # keywordがある場合、sortは指定しない
+                
                 api_response = fetch_dmm_ranking(
                     api_id,
                     affiliate_id,
                     keyword=genre_info['keyword'] if not args.genre_id else None,
-                    sort=sort_order,
+                    sort=actual_sort,  # sort_modeを使用（日付範囲指定時はdateに設定されている）
                     hits=args.hits,
                     offset=offset,
                     genre_id=args.genre_id,
@@ -589,6 +621,39 @@ def main():
             ranking_data = [item for item in ranking_data if is_valid_mature_drama_work(item)]
             after_count = len(ranking_data)
             print(f"   📊 バリデーション後: {after_count}件 (除外: {before_count - after_count}件)")
+            
+            # 日付範囲でフィルタリング
+            if date_from or date_to:
+                before_date_filter = len(ranking_data)
+                filtered_by_date = []
+                for item in ranking_data:
+                    release_date_str = item.get("release_date", "")
+                    if not release_date_str:
+                        continue
+                    
+                    try:
+                        # release_dateの形式: "YYYY-MM-DD HH:MM:SS" または "YYYY-MM-DD"
+                        release_date_parsed = datetime.strptime(release_date_str.split()[0], "%Y-%m-%d")
+                        
+                        # 日付範囲チェック
+                        if date_from:
+                            date_from_parsed = datetime.strptime(date_from, "%Y-%m-%d")
+                            if release_date_parsed < date_from_parsed:
+                                continue
+                        
+                        if date_to:
+                            date_to_parsed = datetime.strptime(date_to, "%Y-%m-%d")
+                            if release_date_parsed > date_to_parsed:
+                                continue
+                        
+                        filtered_by_date.append(item)
+                    except (ValueError, IndexError) as e:
+                        # 日付パースエラーは無視（データが不正な場合はスキップ）
+                        continue
+                
+                ranking_data = filtered_by_date
+                after_date_filter = len(ranking_data)
+                print(f"   📊 日付範囲フィルタリング後: {after_date_filter}件 (除外: {before_date_filter - after_date_filter}件)")
             
             # 既存記事を除外
             if args.exclude_existing and existing_content_ids:

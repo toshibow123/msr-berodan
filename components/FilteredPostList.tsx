@@ -15,13 +15,11 @@ export default function FilteredPostList({ allPosts }: FilteredPostListProps) {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   
-  // 未来の日付の記事をフィルタリング（非表示）
+  // 未来の日付の記事も表示する（すべての記事を表示）
   let filteredPosts = allPosts.filter((post) => {
     if (!post.date) return false
-    const postDate = new Date(post.date)
-    postDate.setHours(0, 0, 0, 0)
-    // 今日以前の日付のみ表示
-    return postDate <= today
+    // すべての記事を表示（未来の日付も含む）
+    return true
   })
 
   // カテゴリーフィルター

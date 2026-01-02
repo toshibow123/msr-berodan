@@ -10,6 +10,7 @@ import EditorialRecommendations from '@/components/EditorialRecommendations'
 import MgstageAd from '@/components/MgstageAd'
 import MgstageWidgetAd from '@/components/MgstageWidgetAd'
 import MgsBanner from '@/components/MgsBanner'
+import MgsAd728x90 from '@/components/MgsAd728x90'
 import PostNavigation from '@/components/PostNavigation'
 // PlayCircleアイコンをSVGで実装（React 19互換性のため）
 const PlayCircle = ({ className }: { className?: string }) => (
@@ -291,7 +292,7 @@ export default async function PostPage({
         )}
 
         {/* 広告位置2: メインビジュアルの後 */}
-        <AffiliateAdMock position="top" size="responsive" />
+        <MgsAd728x90 htmlFile="/ads/mgs-728x90-1.html" />
 
         {/* メインアクション (CTA) - ラグジュアリーデザイン */}
         {post.affiliateLink && (
@@ -318,10 +319,7 @@ export default async function PostPage({
         </article>
 
         {/* 広告位置3: 記事末尾（まとめの直後） */}
-        <MgstageAd 
-          scriptUrl="https://www.mgstage.com/afscript/superch/728_90/N2G56Q3UYEPYWXP7P8PKPRIDC3/"
-          containerId="mgstage-ad-bottom"
-        />
+        <MgsAd728x90 htmlFile="/ads/mgs-728x90-2.html" />
 
         {/* FANZA TV / 単品購入の誘導ボックス */}
         <FanzaSubscriptionPromo 
@@ -330,7 +328,10 @@ export default async function PostPage({
         />
 
         {/* 広告位置4: 関連記事の前 */}
-        <AffiliateAdMock position="bottom" size="responsive" />
+        <MgsAd728x90 htmlFile="/ads/mgs-728x90-3.html" />
+
+        {/* 広告位置5: 前後ナビゲーションの後 */}
+        <MgsAd728x90 htmlFile="/ads/mgs-728x90-4.html" />
 
         {/* 前後の記事ナビゲーション（下部） */}
         <PostNavigation prevPost={prevPost} nextPost={nextPost} />

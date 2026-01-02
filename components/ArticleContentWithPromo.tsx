@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import FanzaSubscriptionPromo from './FanzaSubscriptionPromo'
 import MgstageAd from './MgstageAd'
+import MgsAd728x90 from './MgsAd728x90'
 
 interface ArticleContentWithPromoProps {
   content: string
@@ -55,13 +56,21 @@ export default function ArticleContentWithPromo({
       marker.remove()
     })
 
-    // 広告位置2: 本文内のh2タグの後に広告を挿入（最初の2つのh2の後）
+    // 広告位置: 本文内のh2タグの後に広告を挿入（最初の4つのh2の後）
     const h2Elements = contentRef.current.querySelectorAll('h2')
     let adInsertedCount = 0
     
+    // 4つの異なる広告HTMLファイル
+    const adFiles = [
+      '/ads/mgs-728x90-1.html',
+      '/ads/mgs-728x90-2.html',
+      '/ads/mgs-728x90-3.html',
+      '/ads/mgs-728x90-4.html'
+    ]
+    
     h2Elements.forEach((h2, index) => {
-      // 最初の2つのh2タグの後に広告を挿入
-      if (adInsertedCount < 2 && h2.nextElementSibling && !h2.nextElementSibling.classList.contains('affiliate-ad-inline')) {
+      // 最初の4つのh2タグの後に広告を挿入
+      if (adInsertedCount < 4 && h2.nextElementSibling && !h2.nextElementSibling.classList.contains('affiliate-ad-inline')) {
         const adContainer = document.createElement('div')
         adContainer.className = 'affiliate-ad-inline my-8'
         
@@ -70,13 +79,7 @@ export default function ArticleContentWithPromo({
         
         // Reactコンポーネントをレンダリング
         const root = createRoot(adContainer)
-        // 1つ目と2つ目で異なる広告スクリプトを使用
-        const scriptUrl = adInsertedCount === 0 
-          ? 'https://www.mgstage.com/afscript/prestigebb/728_90/N2G56Q3UYEPYWXP7P8PKPRIDC3/'
-          : 'https://www.mgstage.com/afscript/superch/728_90/N2G56Q3UYEPYWXP7P8PKPRIDC3/'
-        const containerId = `mgstage-ad-inline-${adInsertedCount + 1}`
-        
-        root.render(<MgstageAd scriptUrl={scriptUrl} containerId={containerId} />)
+        root.render(<MgsAd728x90 htmlFile={adFiles[adInsertedCount]} />)
         
         adInsertedCount++
       }
