@@ -202,12 +202,12 @@ export default async function PostPage({
         </div>
       </header>
 
-      <div className="max-w-5xl mx-auto px-0 sm:px-6 py-8 sm:py-12">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
         {/* メインコンテンツとサイドバー */}
         <div className="flex gap-8 items-start">
           <main className="flex-1 max-w-4xl overflow-visible">
         {/* 記事ヘッダー */}
-        <div className="mb-12">
+        <div className="mb-12 px-0 sm:px-0">
           <h1 className="text-4xl md:text-5xl font-serif-jp text-elegant-wine mb-6 leading-relaxed tracking-wider">
             {post.title}
           </h1>
@@ -282,12 +282,12 @@ export default async function PostPage({
 
         {/* メインビジュアル */}
         {post.image && (
-          <div className="mb-12">
+          <div className="mb-12 px-0 sm:px-0">
             <img
               src={post.image}
               alt={post.title}
               className="w-full h-auto max-w-full rounded-lg border border-elegant-border shadow-lg"
-              style={{ maxWidth: '100%', height: 'auto' }}
+              style={{ maxWidth: '100%', height: 'auto', display: 'block' }}
             />
           </div>
         )}
@@ -297,7 +297,7 @@ export default async function PostPage({
 
         {/* メインアクション (CTA) - ラグジュアリーデザイン */}
         {post.affiliateLink && (
-          <div className="mb-12">
+          <div className="mb-12 px-0 sm:px-0">
             <a
               href={post.affiliateLink}
               target="_blank"

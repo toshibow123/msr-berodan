@@ -6,10 +6,12 @@ Cloudflare Pagesのダッシュボードで以下の設定を行ってくださ�
 
 ### Build settings
 
-- **Build command**: `npm run build`
+- **Build command**: `npm run build:clean` ⚠️ **重要**: 不要なデバッグファイルを削除するため、`build:clean`を使用
 - **Build output directory**: `out`
 - **Root directory**: `/` (プロジェクトルート)
 - **Deploy command**: `echo "Deploying..."` ⚠️ 必須項目の場合
+
+⚠️ **重要**: `build:clean`は`next build`の後に自動的に不要な`.txt`ファイルを削除します。これにより、Cloudflare Pagesの20,000ファイル制限内に収まります。
 
 ### ⚠️ 重要な注意点
 

@@ -33,7 +33,7 @@ export default async function Home() {
       </Suspense>
 
       {/* メインコンテンツエリア（サイドバー + 記事一覧） */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-12">
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           {/* 記事一覧（スマホでは先に表示） */}
           <main className="flex-1 min-w-0 order-1 lg:order-2">

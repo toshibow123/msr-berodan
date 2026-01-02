@@ -32,7 +32,7 @@ export default function VideoCard({ post }: VideoCardProps) {
       href={`/posts/${post.slug}`}
       className="group block"
     >
-      <div className="bg-elegant-bg-light rounded-lg overflow-hidden border border-elegant-border hover:border-elegant-wine/50 transition-all duration-300 hover:shadow-lg">
+      <div className="bg-elegant-bg-light rounded-lg overflow-hidden border border-elegant-border hover:border-elegant-wine/50 transition-all duration-300 hover:shadow-lg w-full">
         {/* サムネイルエリア（16:9） */}
         <div className="relative w-full aspect-video overflow-hidden bg-elegant-bg-lighter">
           {post.image ? (

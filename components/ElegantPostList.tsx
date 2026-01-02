@@ -28,7 +28,7 @@ export default function ElegantPostList({ posts, title, subtitle }: ElegantPostL
 
       {/* 記事グリッド（モバイル2列、PC4列） */}
       {posts.length > 0 ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {posts.map((post) => (
             <VideoCard
               key={post.slug}

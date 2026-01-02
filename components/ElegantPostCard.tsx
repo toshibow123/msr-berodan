@@ -27,10 +27,10 @@ export default function ElegantPostCard({
   actingScore,
 }: ElegantPostCardProps) {
   return (
-    <article className="article-card group">
-      <Link href={`/posts/${slug}`} className="block">
+    <article className="article-card group w-full">
+      <Link href={`/posts/${slug}`} className="block w-full">
         {/* 画像エリア */}
-        <div className="relative overflow-hidden h-64 bg-elegant-bg-lighter">
+        <div className="relative overflow-hidden h-64 bg-elegant-bg-lighter w-full">
           <Image
             src={image}
             alt={title}
