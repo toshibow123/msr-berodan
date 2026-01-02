@@ -5,9 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:clean": "next build && node scripts/clean_debug_files.js",
     "start": "next start",
     "lint": "next lint",
-    "deploy": "npm run build && npx wrangler pages deploy out"
+    "deploy": "npm run build:clean && npx wrangler pages deploy out"
   },
   "dependencies": {
     "@types/dompurify": "^3.0.5",

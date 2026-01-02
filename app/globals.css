@@ -15,6 +15,12 @@
     font-weight: 600;
     letter-spacing: 0.05em;
   }
+  
+  /* すべての画像をレスポンシブに */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
 }
 
 @layer components {
@@ -74,6 +80,78 @@
   .prose img {
     @apply rounded-lg my-8 shadow-lg;
     border: 1px solid #3A3A3A;
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+  
+  /* 記事内の画像リンクもレスポンシブに */
+  .prose a img {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  /* DMM Lite Video iframe用のコンテナ - PCでも大きく表示 */
+  .prose div[style*="padding-top"] {
+    max-width: 100%;
+    overflow: hidden;
+    width: 100% !important;
+    margin: 2rem 0 !important;
+    position: relative !important;
+  }
+  
+  /* その他のiframeもレスポンシブに */
+  .prose iframe {
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+  }
+  
+  /* PCでのサンプル動画表示 - padding-topコンテナ内のiframeは特別扱い */
+  .prose div[style*="padding-top"] iframe {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    border: none !important;
+    max-width: none !important;
+  }
+  
+  /* スマホでサンプル動画を大きく表示 */
+  @media (max-width: 768px) {
+    /* 記事本文のコンテナからはみ出すように */
+    .prose {
+      overflow: visible !important;
+    }
+    
+    /* サンプル動画のコンテナを画面端まで広げる */
+    .prose div[style*="padding-top"] {
+      margin-left: -1rem !important;
+      margin-right: -1rem !important;
+      width: calc(100% + 2rem) !important;
+      max-width: calc(100% + 2rem) !important;
+      padding-top: 56.25% !important; /* 16:9のアスペクト比を維持 */
+      position: relative !important;
+      display: block !important;
+    }
+    
+    .prose div[style*="padding-top"] iframe {
+      width: 100% !important;
+      height: 100% !important;
+      max-width: none !important;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      border: none !important;
+    }
+  }
+  
+  /* タブレットサイズでも適切に表示 */
+  @media (min-width: 769px) and (max-width: 1024px) {
+    .prose div[style*="padding-top"] {
+      margin: 2rem 0 !important;
+    }
   }
   
   .prose blockquote {

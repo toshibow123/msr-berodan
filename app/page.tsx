@@ -33,16 +33,9 @@ export default async function Home() {
       </Suspense>
 
       {/* メインコンテンツエリア（サイドバー + 記事一覧） */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* サイドバー */}
-          <aside className="w-full lg:w-80 flex-shrink-0 order-2 lg:order-1">
-            <Suspense fallback={<div className="h-96 bg-elegant-bg-light animate-pulse rounded-xl"></div>}>
-              <Sidebar allPosts={allPosts} tags={allTags} />
-                  </Suspense>
-          </aside>
-
-          {/* 記事一覧 */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+          {/* 記事一覧（スマホでは先に表示） */}
           <main className="flex-1 min-w-0 order-1 lg:order-2">
             <Suspense fallback={
               <div className="text-center text-elegant-text-light">
@@ -52,6 +45,13 @@ export default async function Home() {
               <FilteredPostList allPosts={allPosts} />
             </Suspense>
       </main>
+
+          {/* サイドバー（スマホでは下に表示） */}
+          <aside className="w-full lg:w-80 flex-shrink-0 order-2 lg:order-1">
+            <Suspense fallback={<div className="h-96 bg-elegant-bg-light animate-pulse rounded-xl"></div>}>
+              <Sidebar allPosts={allPosts} tags={allTags} />
+                  </Suspense>
+          </aside>
         </div>
     </div>
     </>

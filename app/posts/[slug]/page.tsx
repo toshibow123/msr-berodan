@@ -191,7 +191,7 @@ export default async function PostPage({
 
       {/* ヘッダー */}
       <header className="border-b-2 border-elegant-gold/30 bg-elegant-bg-light sticky top-[90px] lg:top-0 z-50 shadow-lg">
-        <div className="max-w-5xl mx-auto px-6 py-4">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4">
           <Link 
             href="/"
             className="inline-flex items-center gap-2 text-elegant-text-light hover:text-elegant-wine transition-colors text-sm font-medium"
@@ -202,10 +202,10 @@ export default async function PostPage({
         </div>
       </header>
 
-      <div className="max-w-5xl mx-auto px-6 py-12">
+      <div className="max-w-5xl mx-auto px-0 sm:px-6 py-8 sm:py-12">
         {/* メインコンテンツとサイドバー */}
         <div className="flex gap-8 items-start">
-          <main className="flex-1 max-w-4xl">
+          <main className="flex-1 max-w-4xl overflow-visible">
         {/* 記事ヘッダー */}
         <div className="mb-12">
           <h1 className="text-4xl md:text-5xl font-serif-jp text-elegant-wine mb-6 leading-relaxed tracking-wider">
@@ -286,7 +286,8 @@ export default async function PostPage({
             <img
               src={post.image}
               alt={post.title}
-              className="w-full h-auto rounded-lg border border-elegant-border shadow-lg"
+              className="w-full h-auto max-w-full rounded-lg border border-elegant-border shadow-lg"
+              style={{ maxWidth: '100%', height: 'auto' }}
             />
           </div>
         )}
@@ -310,7 +311,7 @@ export default async function PostPage({
         )}
 
         {/* 本文エリア */}
-        <article className="prose max-w-none mb-20">
+        <article className="prose max-w-none mb-20 px-4 sm:px-0 overflow-visible">
           <ArticleContentWithPromo 
             content={post.content || ''}
             affiliateLink={post.affiliateLink}
