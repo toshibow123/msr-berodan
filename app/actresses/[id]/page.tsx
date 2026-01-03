@@ -3,6 +3,9 @@ import type { Metadata } from 'next'
 import { getActressById, getAllActressIds } from '@/lib/actresses'
 import ActressPageClient from './ActressPageClient'
 
+// 静的エクスポート用の設定
+export const dynamicParams = false
+
 export async function generateStaticParams() {
   const ids = getAllActressIds()
   return ids.map((id) => ({
