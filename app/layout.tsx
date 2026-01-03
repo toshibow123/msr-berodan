@@ -71,34 +71,25 @@ export default function RootLayout({
         />
       </head>
       <body className={`${notoSansJP.variable} ${notoSerifJP.variable}`}>
-        <div className="min-h-screen flex flex-col bg-elegant-bg">
+        <div className="min-h-screen flex flex-col bg-black">
           {/* ヘッダー */}
-          <header className="bg-elegant-bg-light border-b-2 border-elegant-gold/30 shadow-lg">
-            <div className="max-w-5xl mx-auto px-6 py-8">
+          <header className="bg-gradient-to-b from-gray-900 to-black border-b-2 border-amber-500/30 shadow-lg">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
               <Link href="/" className="block">
                 {/* ロゴ画像 */}
                 <div className="flex flex-col items-center">
                   <img 
                     src="/images/products/unnamed11.jpg" 
                     alt="艶めく物語" 
-                    className="max-w-md w-auto h-auto mx-auto shadow-xl border-2 border-elegant-gold/50"
+                    className="max-w-md w-auto h-auto mx-auto shadow-xl border-2 border-amber-500/50"
                   />
                 </div>
               </Link>
               
               {/* ナビゲーション */}
-              <nav className="mt-6 flex justify-center space-x-8">
-                <Link href="/" className="text-elegant-text hover:text-elegant-wine transition-colors duration-300 font-medium">
-                  最新記事
-                </Link>
-                <Link href="/category/mature" className="text-elegant-text hover:text-elegant-wine transition-colors duration-300 font-medium">
-                  熟女
-                </Link>
-                <Link href="/category/married" className="text-elegant-text hover:text-elegant-wine transition-colors duration-300 font-medium">
-                  人妻
-                </Link>
-                <Link href="/category/drama" className="text-elegant-text hover:text-elegant-wine transition-colors duration-300 font-medium">
-                  ドラマ
+              <nav className="mt-6 flex flex-wrap justify-center gap-4 md:gap-8">
+                <Link href="/" className="text-gray-300 hover:text-amber-400 transition-colors duration-300 font-medium text-sm md:text-base">
+                  女優一覧
                 </Link>
               </nav>
             </div>
@@ -110,12 +101,12 @@ export default function RootLayout({
           </main>
 
           {/* フッター */}
-          <footer className="bg-elegant-bg-light border-t-2 border-elegant-gold/30 mt-16">
-            <div className="max-w-5xl mx-auto px-6 py-12 text-center">
-              <p className="text-elegant-text-light text-sm mb-4">
+          <footer className="bg-gradient-to-t from-gray-900 to-black border-t-2 border-amber-500/30 mt-16">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 text-center">
+              <p className="text-gray-400 text-sm mb-4">
                 &copy; 2025 艶めく物語. All rights reserved.
               </p>
-              <p className="text-elegant-text-dark text-xs">
+              <p className="text-gray-500 text-xs">
                 このサイトは18歳未満の方の閲覧を禁止しています。
               </p>
             </div>
