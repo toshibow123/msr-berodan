@@ -8,7 +8,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://your-domain.com' // 環境変数で設定
   const actressIds = getAllActressIds()
 
-  const actressPages = actressIds.map((id) => ({
+  const actresses = actressIds.map((id) => ({
     url: `${siteUrl}/actresses/${id}`,
     lastModified: new Date(),
     changeFrequency: 'weekly' as const,
@@ -22,7 +22,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'daily',
       priority: 1,
     },
-    ...actressPages,
+    {
+      url: `${siteUrl}/test-ads`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.3,
+    },
+    ...actresses,
   ]
 }
 

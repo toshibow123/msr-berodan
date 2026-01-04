@@ -91,6 +91,9 @@ export default function RootLayout({
                 <Link href="/" className="text-gray-300 hover:text-amber-400 transition-colors duration-300 font-medium text-sm md:text-base">
                   女優一覧
                 </Link>
+                <Link href="/tags" className="text-gray-300 hover:text-amber-400 transition-colors duration-300 font-medium text-sm md:text-base">
+                  タグ一覧
+                </Link>
               </nav>
             </div>
           </header>

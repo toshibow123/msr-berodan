@@ -168,9 +168,9 @@ export default function WorkFeedCard({ work }: WorkFeedCardProps) {
   }
 
   return (
-    <article className="bg-gradient-to-b from-gray-900 to-black rounded-2xl border border-amber-500/20 shadow-2xl mb-4" style={{ overflow: 'visible' }}>
+    <article className="bg-gradient-to-b from-elegant-bg-light to-elegant-bg rounded-2xl border border-elegant-wine/20 shadow-2xl mb-4" style={{ overflow: 'visible' }}>
       {/* ヘッダー */}
-      <div className="px-3 py-2 border-b border-amber-500/20">
+      <div className="px-3 py-2 border-b border-elegant-wine/20">
         <div className="flex flex-col gap-1">
           <div className="flex-1">
             <h3 className="text-lg md:text-xl font-bold text-white mb-0.5 leading-tight">
@@ -209,8 +209,8 @@ export default function WorkFeedCard({ work }: WorkFeedCardProps) {
                   })}
                 </time>
               )}
-              {work.actress && (
-                <span className="flex items-center gap-1 text-amber-400">
+                     {work.actress && (
+                       <span className="flex items-center gap-1 text-elegant-wine">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
@@ -232,39 +232,80 @@ export default function WorkFeedCard({ work }: WorkFeedCardProps) {
         </div>
       </div>
 
+      {/* タグ表示 */}
+      {work.tags && work.tags.length > 0 && (
+        <div className="px-3 py-2 border-b border-elegant-wine/20">
+          <div className="flex items-center gap-2 mb-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-4 h-4 text-elegant-wine"
+            >
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+              <line x1="7" y1="7" x2="7.01" y2="7" />
+            </svg>
+            <span className="text-sm font-semibold text-elegant-wine">タグ</span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {work.tags.map((tag, index) => (
+              <span 
+                key={index} 
+                className="px-3 py-1 rounded-full bg-gradient-to-r from-elegant-wine/20 to-elegant-wine/30 border border-elegant-wine/40 text-xs text-elegant-text-light whitespace-nowrap hover:from-elegant-wine/30 hover:to-elegant-wine/40 transition-all duration-200 shadow-sm"
+              >
+                #{tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* 1. 作品写真（パッケージ画像） */}
       {work.image && (
         <div className="w-full bg-black" style={{ margin: 0, padding: 0 }}>
-          {work.affiliateLink ? (
-            <a
-              href={work.affiliateLink}
-              target="_blank"
-              rel="noopener noreferrer sponsored"
-              className="block cursor-pointer hover:opacity-90 transition-opacity"
-            >
-              <Image
-                src={work.image}
-                alt={work.title}
-                width={800}
-                height={1200}
-                className="w-full h-auto block"
-                style={{ width: '100%', height: 'auto', display: 'block', margin: 0, padding: 0 }}
-                sizes="100vw"
-                priority={false}
-              />
-            </a>
-          ) : (
+          <a
+            href={work.affiliateLink}
+            target="_blank"
+            rel="noopener noreferrer sponsored"
+            className="block w-full hover:opacity-90 transition-all duration-300 relative group cursor-pointer"
+            title={`${work.title} - 詳細を見る`}
+          >
             <Image
               src={work.image}
               alt={work.title}
               width={800}
               height={1200}
-              className="w-full h-auto block"
+              className="w-full h-auto block group-hover:scale-[1.02] transition-transform duration-300"
               style={{ width: '100%', height: 'auto', display: 'block', margin: 0, padding: 0 }}
               sizes="100vw"
               priority={false}
             />
-          )}
+            
+            {/* クリック可能アイコン（ホバー時表示） */}
+            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+              <div className="bg-elegant-wine/90 text-white px-4 py-2 rounded-full flex items-center gap-2 shadow-lg">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="w-5 h-5"
+                >
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                  <polyline points="15 3 21 3 21 9" />
+                  <line x1="10" y1="14" x2="21" y2="3" />
+                </svg>
+                <span className="text-sm font-semibold">詳細を見る</span>
+              </div>
+            </div>
+          </a>
         </div>
       )}
 
@@ -301,8 +342,8 @@ export default function WorkFeedCard({ work }: WorkFeedCardProps) {
 
       {/* 3. サンプル画像エリア（横スクロール） - 各作品ごとに5枚表示 */}
       {work.image && contentId && (
-        <div className="px-3 py-3 bg-gray-900/50 border-t border-amber-500/20">
-          <h4 className="text-sm font-semibold text-amber-400 mb-2 flex items-center gap-2">
+        <div className="px-3 py-3 bg-elegant-bg-light/50 border-t border-elegant-wine/20">
+                 <h4 className="text-sm font-semibold text-elegant-wine mb-2 flex items-center gap-2">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -369,7 +410,7 @@ export default function WorkFeedCard({ work }: WorkFeedCardProps) {
                   {sampleImageUrls.map((url, index) => (
                     <div
                       key={index}
-                      className="relative flex-shrink-0 rounded-lg overflow-hidden border-2 border-amber-500/30 bg-gray-800 shadow-lg hover:shadow-amber-500/20 transition-all cursor-pointer"
+                             className="relative flex-shrink-0 rounded-lg overflow-hidden border-2 border-elegant-wine/30 bg-elegant-bg-light shadow-lg hover:shadow-elegant-wine/20 transition-all cursor-pointer"
                       style={{ width: '220px', height: '165px' }}
                       onClick={() => openModal(index)}
                     >
@@ -399,12 +440,12 @@ export default function WorkFeedCard({ work }: WorkFeedCardProps) {
 
       {/* アクション：CTAボタン */}
       {work.affiliateLink && (
-        <div className="px-3 py-2 bg-gradient-to-r from-gray-900 to-black border-t border-amber-500/20 relative z-0">
+               <div className="px-3 py-2 bg-gradient-to-r from-elegant-bg-light to-elegant-bg border-t border-elegant-wine/20 relative z-0">
           <a
             href={work.affiliateLink}
             target="_blank"
             rel="noopener noreferrer sponsored"
-            className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 hover:from-amber-700 hover:via-amber-600 hover:to-amber-700 text-white font-bold text-sm md:text-base py-2.5 px-5 rounded-lg transition-all shadow-lg hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] relative z-0"
+                   className="flex items-center justify-center gap-2 w-full bg-gradient-to-r from-elegant-wine via-elegant-wine-light to-elegant-wine hover:from-elegant-wine-dark hover:via-elegant-wine hover:to-elegant-wine-dark text-white font-bold text-sm md:text-base py-2.5 px-5 rounded-lg transition-all shadow-lg hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] relative z-0"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -540,6 +581,9 @@ export default function WorkFeedCard({ work }: WorkFeedCardProps) {
           </div>
         </div>
       )}
+
+      {/* 作品区切り線 */}
+      <div className="mt-4 border-b-2 border-elegant-wine/30 mx-4"></div>
     </article>
   )
 }

@@ -2,9 +2,21 @@ import type { Config } from 'tailwindcss'
 
 const config: Config = {
   content: [
-    './pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/AffiliateAdMock.tsx',
+    './components/AffiliateSidebar.tsx',
+    './components/FanzaSubscriptionPromo.tsx',
+    './components/FanzaTvSidebarBanner.tsx',
+    './components/IframeAd.tsx',
+    './components/InFeedAdCard.tsx',
+    './components/MgsAd300x250.tsx',
+    './components/MgsAd728x90.tsx',
+    './components/MgsBanner.tsx',
+    './components/Sidebar.tsx',
+    './components/TopPageContent.tsx',
+    './components/VitalityPromoSection.tsx',
+    './components/VitalityProductCard.tsx',
+    './components/WorkFeedCard.tsx',
   ],
   theme: {
     extend: {

@@ -1,0 +1,23 @@
+# DMM API スクレイパー用の依存関係
+
+# HTTP リクエスト
+requests>=2.31.0
+
+# 環境変数管理
+python-dotenv>=1.0.0
+
+# JSON処理（標準ライブラリだが明示）
+# json (built-in)
+
+# 日時処理（標準ライブラリだが明示）
+# datetime (built-in)
+
+# タイプヒント（Python 3.8+では標準ライブラリ）
+# typing (built-in)
+
+# オプション: より高度なHTTPクライアント
+# httpx>=0.25.0
+
+# オプション: 非同期処理用
+# aiohttp>=3.9.0
+# asyncio (built-in)

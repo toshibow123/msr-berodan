@@ -1,0 +1,17 @@
+# DMM API 設定
+# https://affiliate.dmm.com/ でアカウント作成後、以下の情報を取得してください
+
+# DMM API ID（必須）
+DMM_API_ID=your_api_id_here
+
+# DMM アフィリエイト ID（必須）
+DMM_AFFILIATE_ID=your_affiliate_id_here
+
+# 使用例:
+# DMM_API_ID=12345678901234567890
+# DMM_AFFILIATE_ID=affiliate-001
+
+# 注意事項:
+# 1. このファイルを .env にリネームして使用してください
+# 2. 実際のAPI情報を入力した .env ファイルはGitにコミットしないでください
+# 3. DMM APIの利用規約を遵守してください

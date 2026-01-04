@@ -2,6 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Elegant Color Scheme */
+:root {
+  /* Background Colors */
+  --elegant-bg: #1A1A1A;
+  --elegant-bg-light: #252525;
+  --elegant-bg-lighter: #2F2F2F;
+  
+  /* Text Colors */
+  --elegant-text: #E5E5E5;
+  --elegant-text-light: #B8B8B8;
+  --elegant-text-dark: #8A8A8A;
+  
+  /* Accent Colors */
+  --elegant-wine: #8B2252;
+  --elegant-wine-light: #A0336B;
+  --elegant-gold: #D4AF37;
+  --elegant-champagne: #F0E68C;
+  
+  /* Border Colors */
+  --elegant-border: #3A3A3A;
+}
+
 @layer utilities {
   /* スクロールバーを非表示にするユーティリティ */
   .scrollbar-hide {
@@ -15,7 +37,8 @@
 
 @layer base {
   body {
-    @apply bg-elegant-bg text-elegant-text;
+    background-color: var(--elegant-bg);
+    color: var(--elegant-text);
     font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'メイリオ', sans-serif;
     line-height: 1.9;
     letter-spacing: 0.02em;

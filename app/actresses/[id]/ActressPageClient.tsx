@@ -7,6 +7,7 @@ import { type ActressData, type WorkData } from '@/lib/actresses'
 import WorkFeedCard from '@/components/WorkFeedCard'
 import InFeedAdCard from '@/components/InFeedAdCard'
 import FanzaSubscriptionPromo from '@/components/FanzaSubscriptionPromo'
+import VitalityPromoSection from '@/components/VitalityPromoSection'
 
 interface ActressPageClientProps {
   actress: ActressData
@@ -66,14 +67,29 @@ function generateSampleImageUrls(imageUrl: string, contentId: string | null, cou
 
 export default function ActressPageClient({ actress, works }: ActressPageClientProps) {
   const [displayCount, setDisplayCount] = useState(INITIAL_DISPLAY_COUNT)
+  const [selectedTag, setSelectedTag] = useState<string | null>(null)
+  
+  // 全作品からタグを抽出（重複除去）
+  const allTags = [...new Set(works.flatMap(work => work.tags || []))].sort()
+  
+  // タグでフィルタリングされた作品リスト
+  const filteredWorks = selectedTag 
+    ? works.filter(work => work.tags?.includes(selectedTag))
+    : works
+  
+  // タグが変更されたら表示数をリセット
+  const handleTagChange = (tag: string | null) => {
+    setSelectedTag(tag)
+    setDisplayCount(INITIAL_DISPLAY_COUNT)
+  }
 
-  // 表示する作品（最新順）
-  const displayedWorks = works.slice(0, displayCount)
-  const hasMore = displayCount < works.length
-  const remainingCount = works.length - displayCount
+  // 表示する作品（フィルタリング済み、最新順）
+  const displayedWorks = filteredWorks.slice(0, displayCount)
+  const hasMore = displayCount < filteredWorks.length
+  const remainingCount = filteredWorks.length - displayCount
 
   const handleLoadMore = () => {
-    setDisplayCount((prev) => Math.min(prev + LOAD_MORE_COUNT, works.length))
+    setDisplayCount((prev) => Math.min(prev + LOAD_MORE_COUNT, filteredWorks.length))
   }
 
   // 広告を挿入するかどうかを判定
@@ -98,14 +114,14 @@ export default function ActressPageClient({ actress, works }: ActressPageClientP
   const displayHeaderSamples = headerSampleImages.slice(0, 6)
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-elegant-bg text-elegant-text">
       {/* ヘッダー：女優プロフィール */}
-      <header className="bg-gradient-to-b from-gray-900 via-black to-black border-b-2 border-amber-500/30">
+      <header className="bg-gradient-to-b from-elegant-bg-light via-elegant-bg to-elegant-bg border-b-2 border-elegant-wine/30">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-            {/* プロフィール画像 */}
-            {actress.image && (
-              <div className="relative w-40 h-40 md:w-56 md:h-56 rounded-full overflow-hidden border-4 border-amber-500/50 shadow-2xl flex-shrink-0">
+                     {/* プロフィール画像 */}
+                   {actress.image && (
+                     <div className="relative w-40 h-40 md:w-56 md:h-56 rounded-full overflow-hidden border-4 border-elegant-wine/50 shadow-2xl flex-shrink-0">
                 <Image
                   src={actress.image}
                   alt={actress.name}
@@ -118,18 +134,18 @@ export default function ActressPageClient({ actress, works }: ActressPageClientP
 
             {/* 女優情報 */}
             <div className="flex-1 text-center md:text-left">
-              <h1 className="text-3xl md:text-4xl font-bold text-amber-400 mb-2 font-serif">
+              <h1 className="text-3xl md:text-4xl font-bold text-elegant-wine mb-2 font-serif">
                 {actress.name}
               </h1>
-              <p className="text-lg text-gray-300 mb-2">
-                作品数: <span className="text-amber-400 font-bold">{actress.works.length}件</span>
+              <p className="text-lg text-elegant-text-light mb-2">
+                作品数: <span className="text-elegant-wine font-bold">{actress.works.length}件</span>
               </p>
-              <p className="text-xs text-gray-400 mb-3">
+              <p className="text-xs text-elegant-text-dark mb-3">
                 下へスクロールして作品を閲覧
               </p>
               <Link
                 href="/"
-                className="inline-flex items-center gap-2 text-gray-400 hover:text-amber-400 transition-colors text-xs"
+                className="inline-flex items-center gap-2 text-elegant-text-dark hover:text-elegant-wine transition-colors text-xs"
               >
                 <span>←</span>
                 <span>トップページに戻る</span>
@@ -140,7 +156,7 @@ export default function ActressPageClient({ actress, works }: ActressPageClientP
           {/* サンプル画像（横スクロール） */}
           {displayHeaderSamples.length > 0 && (
             <div className="mt-6">
-              <h2 className="text-sm font-semibold text-amber-400 mb-3 flex items-center gap-2">
+                     <h2 className="text-sm font-semibold text-elegant-wine mb-3 flex items-center gap-2">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -162,7 +178,7 @@ export default function ActressPageClient({ actress, works }: ActressPageClientP
                   {displayHeaderSamples.map((url, index) => (
                     <div
                       key={index}
-                      className="relative flex-shrink-0 rounded-lg overflow-hidden border border-amber-500/20 bg-gray-800"
+                             className="relative flex-shrink-0 rounded-lg overflow-hidden border border-elegant-wine/20 bg-elegant-bg-light"
                       style={{ width: '180px', height: '135px' }}
                     >
                       <Image
@@ -186,6 +202,65 @@ export default function ActressPageClient({ actress, works }: ActressPageClientP
 
       {/* メインコンテンツ：タイムライン（フィード型） */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* タグフィルター */}
+        {allTags.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-sm font-semibold text-elegant-wine mb-4 flex items-center gap-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-4 h-4"
+              >
+                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                <line x1="7" y1="7" x2="7.01" y2="7" />
+              </svg>
+              タグで絞り込み
+            </h2>
+            <div className="overflow-x-auto scrollbar-hide">
+              <div className="flex gap-2 pb-2" style={{ width: 'max-content' }}>
+                {/* 全て表示ボタン */}
+                <button
+                  onClick={() => handleTagChange(null)}
+                  className={`
+                    px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 whitespace-nowrap
+                    ${selectedTag === null
+                      ? 'bg-elegant-wine text-white shadow-lg'
+                      : 'bg-elegant-bg-light text-elegant-text-light border border-elegant-border hover:bg-elegant-bg-lighter hover:text-elegant-text'
+                    }
+                  `}
+                >
+                  全て表示 ({works.length})
+                </button>
+                
+                {/* タグボタン */}
+                {allTags.map((tag) => {
+                  const tagCount = works.filter(work => work.tags?.includes(tag)).length
+                  return (
+                    <button
+                      key={tag}
+                      onClick={() => handleTagChange(tag)}
+                      className={`
+                        px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 whitespace-nowrap
+                        ${selectedTag === tag
+                          ? 'bg-elegant-wine text-white shadow-lg'
+                          : 'bg-elegant-bg-light text-elegant-text-light border border-elegant-border hover:bg-elegant-bg-lighter hover:text-elegant-text'
+                        }
+                      `}
+                    >
+                      {tag} ({tagCount})
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* 作品フィード */}
         <div className="space-y-4">
           {displayedWorks.map((work, index) => {
@@ -211,24 +286,42 @@ export default function ActressPageClient({ actress, works }: ActressPageClientP
         {/* Load More ボタン */}
         {hasMore && (
           <div className="mt-12 text-center">
-            <button
-              onClick={handleLoadMore}
-              className="px-8 py-4 bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 text-white font-semibold rounded-xl transition-all shadow-lg hover:shadow-xl border border-amber-500/30 hover:border-amber-500/50"
-            >
-              次の{Math.min(LOAD_MORE_COUNT, remainingCount)}作品を表示
-              <span className="ml-2 text-amber-400">
-                ({remainingCount}件残り)
-              </span>
+                   <button
+                     onClick={handleLoadMore}
+                     className="px-8 py-4 bg-gradient-to-r from-elegant-bg-light to-elegant-bg-lighter hover:from-elegant-bg-lighter hover:to-elegant-bg text-white font-semibold rounded-xl transition-all shadow-lg hover:shadow-xl border border-elegant-wine/30 hover:border-elegant-wine/50"
+                   >
+                     次の{Math.min(LOAD_MORE_COUNT, remainingCount)}作品を表示
+                     <span className="ml-2 text-elegant-wine">
+                       ({remainingCount}件残り)
+                     </span>
             </button>
           </div>
         )}
 
         {/* 全作品表示完了メッセージ */}
-        {!hasMore && works.length > 0 && (
+        {!hasMore && filteredWorks.length > 0 && (
           <div className="mt-12 text-center">
-            <p className="text-gray-400 text-sm">
-              全{works.length}作品を表示しました
+            <p className="text-elegant-text-dark text-sm">
+              {selectedTag 
+                ? `「${selectedTag}」タグの全${filteredWorks.length}作品を表示しました`
+                : `全${filteredWorks.length}作品を表示しました`
+              }
             </p>
+          </div>
+        )}
+
+        {/* フィルタリング結果が0件の場合 */}
+        {filteredWorks.length === 0 && selectedTag && (
+          <div className="mt-12 text-center">
+            <p className="text-elegant-text-dark text-lg mb-4">
+              「{selectedTag}」タグの作品が見つかりませんでした
+            </p>
+            <button
+              onClick={() => handleTagChange(null)}
+              className="px-6 py-3 bg-elegant-wine hover:bg-elegant-wine-light text-white font-semibold rounded-lg transition-all"
+            >
+              全ての作品を表示
+            </button>
           </div>
         )}
 
@@ -265,11 +358,11 @@ export default function ActressPageClient({ actress, works }: ActressPageClientP
 
         {/* 固定：ページトップに戻るボタン（スクロール中も表示） */}
         <div className="fixed bottom-8 right-8 z-30">
-          <button
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="w-12 h-12 bg-amber-500/90 hover:bg-amber-600 text-white rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110"
-            aria-label="ページトップに戻る"
-          >
+                 <button
+                   onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                   className="w-12 h-12 bg-elegant-wine/90 hover:bg-elegant-wine text-white rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110"
+                   aria-label="ページトップに戻る"
+                 >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -283,6 +376,32 @@ export default function ActressPageClient({ actress, works }: ActressPageClientP
               <polyline points="18 15 12 9 6 15" />
             </svg>
           </button>
+        </div>
+
+        {/* Vitality Promo Section */}
+        <VitalityPromoSection />
+
+        {/* TOPページへ戻るボタン */}
+        <div className="flex justify-center py-12">
+          <Link
+            href="/"
+            className="group flex items-center gap-3 bg-elegant-wine/90 hover:bg-elegant-wine text-white px-8 py-4 rounded-full font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-elegant-wine/25"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-300"
+            >
+              <path d="M19 12H5" />
+              <polyline points="12 19 5 12 12 5" />
+            </svg>
+            <span>TOPページへ戻る</span>
+          </Link>
         </div>
       </main>
     </div>
